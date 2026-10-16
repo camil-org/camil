@@ -55,11 +55,12 @@ object CityEvt:
         Thread.sleep(1000) // Simulate user filling the registration form
         em.emit(RegistrationForm(take(userData)._1, take(userData)._2))
     val registered = on[Cloud]:
+      val currentRegisteredUsers = take(registeredUsers)
       Signal
         .merge(asLocalAll(registration).values.toSeq)
         .map: form =>
           val token = UUID.randomUUID()
-          registeredUsers = place(take(registeredUsers) + (form.username -> token))
+          registeredUsers = place(currentRegisteredUsers + (form.username -> token))
           form.email -> token
     on[Smartphone]:
       val res = asLocal[Smartphone, Cloud](registered).filter(_._1 == take(userData)._2).first._2
@@ -71,8 +72,10 @@ object CityEvt:
     val grantedResults = Choreography:
       val requests = comm[Edge, Cloud](authRequests)
       val authGranted = on[Cloud]:
-        take(requests).map:
-          case (peerId, token) => peerId -> take(registeredUsers).exists(_._2 == token)
+        val currentRequests = take(requests)
+        val currentUsers = take(registeredUsers)
+        currentRequests.map:
+          case (peerId, token) => peerId -> currentUsers.exists(_._2 == token)
       comm[Cloud, Edge](authGranted)
     val recommendations = on[Edge]:
       val authPeers = take(grantedResults).filter(_._2).keySet

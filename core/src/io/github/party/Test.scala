@@ -25,6 +25,14 @@ object Test:
     // b
     42
 
+  // def choreo(using Choreography, Placement, Network) = Choreography:
+  //   val valueOnPinger = on[Pinger] { "Hello from the pinger!" }
+  //   val funAtPinger = on[Pinger] { () => take(valueOnPinger) }
+  //   val msgAtPonger = comm[Pinger, Ponger](funAtPinger)
+  //   on[Ponger]:
+  //     val f = take(msgAtPonger)
+  //     f()
+
   // def mixParadigms(using Network, PlacementType^, Choreography, Multitier) =
   //   val a = Choreography:
   //     val onPinger = on[Pinger] { "Hello from the pinger!" }
