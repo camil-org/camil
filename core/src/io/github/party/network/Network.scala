@@ -22,7 +22,6 @@ enum NetworkError(val message: String) extends Throwable(message):
 
 trait Network extends SharedCapability:
   type PeerAddress
-  type KeyId
 
   def reachablePeers: Set[PeerAddress]
   def reachablePeersOf[P <: Peer: PeerTag]: Set[PeerAddress]

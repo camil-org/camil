@@ -102,7 +102,7 @@ private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[Ne
 
 object ChoreographyHandler:
   def run[P <: Peer: PeerTag](using r: Raise[NetworkError])[V](program: Choreography^ ?=> V): V =
-    given (Choreography^{r}) = ChoreographyEffectImpl[P]
+    given (Choreography^) = ChoreographyEffectImpl[P]
     program
 
   def handler[P <: Peer: PeerTag](using Raise[NetworkError]): Choreography = ChoreographyEffectImpl[P]

@@ -15,16 +15,14 @@ import io.github.party.placement.PlacementType.on
 private final class MultitierEffectImpl[P <: Peer: PeerTag](using r: Raise[NetworkError]) extends Multitier:
   type |~>[Id, V] = Map[Id, V]
 
-  extension [Id, V](perPeer: Id |~> V) def get(peerId: Id): Option[V] =
-    perPeer.get(peerId)
-  extension [Id, V](perPeer: Id |~> V) def getOrElse(peerId: Id, default: -> V): V =
-    perPeer.getOrElse(peerId, default)
-  extension [Id, V](perPeer: Id |~> V) def mapValues[U](f: V -> U): Id |~> U =
-    perPeer.view.mapValues(f).toMap
-  extension [Id, V](perPeer: Id |~> V) def fold[U](initial: U)(f: (U, Id, V) -> U): U =
-    perPeer.foldLeft(initial) { case (acc, (id, value)) => f(acc, id, value) }
-  extension [Id, V](perPeer: Id |~> V) def values: Iterable[V] = perPeer.values
-  extension [Id, V](perPeer: Id |~> V) def toMap: Map[Id, V] = perPeer
+  extension [Id, V](perPeer: Id |~> V) 
+    def get(peerId: Id): Option[V] = perPeer.get(peerId)
+    def getOrElse(peerId: Id, default: -> V): V = perPeer.getOrElse(peerId, default)
+    def mapValues[U](f: V -> U): Id |~> U = perPeer.view.mapValues(f).toMap
+    def fold[U](initial: U)(f: (U, Id, V) -> U): U = 
+      perPeer.foldLeft(initial) { case (acc, (id, value)) => f(acc, id, value) }
+    def values: Iterable[V] = perPeer.values
+    def toMap: Map[Id, V] = perPeer
 
   def asLocal[L <: TiedSingleWith[R]: PeerTag, R <: Peer: PeerTag, V](using n: Network)(placement: V on R): V =
     val key = placement.key
@@ -43,7 +41,7 @@ private final class MultitierEffectImpl[P <: Peer: PeerTag](using r: Raise[Netwo
 
 object MultitierHandler:
   def run[P <: Peer: PeerTag](using r: Raise[NetworkError])[V](program: Multitier^ ?=> V): V =
-    given (Multitier^{r}) = new MultitierEffectImpl[P]
+    given (Multitier^) = new MultitierEffectImpl[P]
     program
 
   def handler[P <: Peer: PeerTag](using Raise[NetworkError]): Multitier = new MultitierEffectImpl[P]

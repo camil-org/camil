@@ -3,19 +3,19 @@
 
 package build
 
-import mill._
-import scalalib._
+import mill.*
+import scalalib.*
 import com.goyeau.mill.scalafix.ScalafixModule
 import mill.api.Task.Simple
 import mill.scalanativelib.ScalaNativeModule
 
-trait CommonScala extends ScalaModule with ScalafixModule /*with ScalaNativeModule*/ {
-  def scalaVersion = "3.8.1"
+trait CommonScala extends ScalaModule with ScalafixModule /*with ScalaNativeModule*/:
+  def scalaVersion = "3.10.0"
   def scalaNativeVersion = "0.5.10"
 //  def scoverageVersion = "2.1.0"
 
-  // def jvmId = "temurin:23.0.1"
-  // def jvmIndexVersion = "latest.release"
+//  def jvmId = "temurin:23.0.1"
+//  def jvmIndexVersion = "latest.release"
 
   def scalacOptions = Seq(
     "-Werror",
@@ -25,10 +25,10 @@ trait CommonScala extends ScalaModule with ScalafixModule /*with ScalaNativeModu
     "-explain",
     "-deprecation",
     "-Xcheck-macros",
-    // "-Wunused:imports",
+//    "-Wunused:imports",
 //    "-source:3.8",
 //    "-Xprint:cc",
-  //  "-Ycheck:all",
+//    "-Ycheck:all",
 //    "-Ycc-debug",
     "-experimental",
     "-feature",
@@ -51,10 +51,10 @@ trait CommonScala extends ScalaModule with ScalafixModule /*with ScalaNativeModu
     // mvn"org.scalamock::scalamock:7.5.2",
     // mvn"io.circe::circe-core:0.14.15",
   )
-}
+end CommonScala
 
-object core extends CommonScala {
-  object test extends ScalaTests with TestModule.ScalaTest {
+object core extends CommonScala:
+  object test extends ScalaTests with TestModule.ScalaTest:
     def testParallelism = true
     def mvnDeps = Seq(
       mvn"org.scalatest::scalatest:3.2.19",
@@ -62,17 +62,12 @@ object core extends CommonScala {
       // mvn"io.circe::circe-generic:0.14.15",
       // mvn"io.circe::circe-parser:0.14.15",
     )
-  }
-}
 
-object distributed extends CommonScala {
+object distributed extends CommonScala:
   def moduleDeps = Seq(core)
-}
 
-object examples extends CommonScala {
+object examples extends CommonScala:
   def moduleDeps = Seq(core, distributed)
-}
 
-object nebula extends CommonScala {
+object nebula extends CommonScala:
   def moduleDeps = Seq(core, distributed)
-}

@@ -17,7 +17,7 @@ import scala.concurrent.duration.*
 import scala.util.Try
 
 import io.github.party.network.NetworkEvent
-import io.github.party.network.{Identifier, Network, NetworkError}
+import io.github.party.network.{ Identifier, Network, NetworkError }
 import io.github.party.peers.Peers.{ Peer, PeerTag, TiedWith }
 import io.github.party.raise.Raise
 import io.github.party.raise.Raise.ensure

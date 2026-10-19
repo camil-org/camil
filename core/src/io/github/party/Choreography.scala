@@ -1,8 +1,5 @@
 package io.github.party
 
-import scala.caps.Control
-import scala.caps.SharedCapability
-import scala.caps.cap
 import scala.compiletime.Erased
 
 import io.github.party.network.Network
