@@ -61,6 +61,7 @@ object Karatsuba:
         val z2 = take(z2AtA)
         val z1 = take(crossAtA) - z2 - z0
         z2 * p.splitter * p.splitter + z1 * p.splitter + z0
+    end if
 
   private def multiplyAtB(valuesAtB: (Long, Long) on B)(using Network, Placement, Choreography): Long on B = Choreography:
     val doneAtB: Boolean on B = on[B]:
@@ -92,6 +93,7 @@ object Karatsuba:
         val z2 = take(z2AtB)
         val z1 = take(crossAtB) - z2 - z0
         z2 * p.splitter * p.splitter + z1 * p.splitter + z0
+    end if
 
   private def multiplyAtC(valuesAtC: (Long, Long) on C)(using Network, Placement, Choreography): Long on C = Choreography:
     val doneAtC: Boolean on C = on[C]:
@@ -123,6 +125,7 @@ object Karatsuba:
         val z2 = take(z2AtC)
         val z1 = take(crossAtC) - z2 - z0
         z2 * p.splitter * p.splitter + z1 * p.splitter + z0
+    end if
 
   def karatsubaProtocol(using Network, Placement, Choreography) = Choreography:
     val inputAtA = on[A]:
@@ -132,11 +135,11 @@ object Karatsuba:
       println(s"[A] product=${take(resultAtA)}")
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography) ?=> V,
+      program: (Network, Placement, Choreography) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given PlacementType = PlacementTypeHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
     given Choreography = ChoreographyHandler.handler[P]
     program
 

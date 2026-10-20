@@ -23,13 +23,13 @@ object EmailApplication:
   case class Email(date: LocalDateTime, content: String)
 
   def emailApp(using Network, Placement, Multitier) = Multitier:
-    val filters = on[Client] { ("Locix", 7) }
+    val filters = on[Client] { ("Camil", 7) }
     val allEmails = on[Server]:
       Seq(
-        Email(LocalDateTime.now().minusDays(1), "Welcome to Locix!"),
-        Email(LocalDateTime.now().minusDays(5), "Your Locix subscription is active."),
-        Email(LocalDateTime.now().minusDays(10), "Don't miss our Locix webinar."),
-        Email(LocalDateTime.now().minusDays(15), "Learn more about Locix."),
+        Email(LocalDateTime.now().minusDays(1), "Welcome to Camil!"),
+        Email(LocalDateTime.now().minusDays(5), "Your Camil subscription is active."),
+        Email(LocalDateTime.now().minusDays(10), "Don't miss our Camil webinar."),
+        Email(LocalDateTime.now().minusDays(15), "Learn more about Camil."),
       )
     val filteredEmails = on[Server]:
       val (words, days) = asLocal(filters)
@@ -41,11 +41,11 @@ object EmailApplication:
       }
       println(s"[$peerAddress] Email search completed.")
 
-  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, PlacementType, Multitier) ?=> V): V =
+  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Multitier) ?=> V): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
-    given cHandler: Multitier = MultitierHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Multitier = MultitierHandler.handler[P]
     program
 
   def main(args: Array[String]): Unit =

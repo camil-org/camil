@@ -124,12 +124,12 @@ object CityEvt:
     Thread.sleep(6000) // Keep the program running for a while to observe the output
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography, Collective, Multitier) ?=> V,
+      program: (Network, Placement, Choreography, Collective, Multitier) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
-    given cHandler: Choreography = ChoreographyHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Choreography = ChoreographyHandler.handler[P]
     given Collective = CollectiveHandler.handle[P, String, V]
     given Multitier = MultitierHandler.handler[P]
     program

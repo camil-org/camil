@@ -66,7 +66,7 @@ object CollectiveExampleSupport:
     topology.observationWindow + (topology.round * ((topology.peerIds.size - 1L) * propagationPhases.toLong))
 
   def runCollectiveExample[P <: Peer: PeerTag](
-      program: (Network, PlacementType, Collective) ?=> Unit,
+      program: (Network, Placement, Collective) ?=> Unit,
       topology: StaticTopology = Line4,
   ): Unit =
     val broker = InMemoryNetwork.broker()
@@ -114,7 +114,7 @@ object CollectiveExampleSupport:
       pureCombine(local, contributions.withoutSelf.values.foldLeft(zero)(pureCombine))
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)(
-      program: (Network, PlacementType, Collective) ?=> Unit,
+      program: (Network, Placement, Collective) ?=> Unit,
   ): Unit =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
@@ -137,12 +137,10 @@ object CollectiveExampleSupport:
       .combine(inRangeDistances(topology))((neighborPotential, distance) => (neighborPotential, distance))
       .withoutSelf
       .asInstanceOf[Map[Any, (Double, Double)]]
-    val candidates = neighbors
-      .iterator
+    val candidates = neighbors.iterator
       .flatMap: (neighborId, candidate) =>
         val (neighborPotential, distance) = candidate
-        if distance.isFinite then
-          Some((neighborPotential, peerOrdinal(neighborId.toString), neighborId.toString))
+        if distance.isFinite then Some((neighborPotential, peerOrdinal(neighborId.toString), neighborId.toString))
         else None
       .toList
     candidates.minOption match

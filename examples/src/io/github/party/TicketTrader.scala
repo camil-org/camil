@@ -125,11 +125,11 @@ object TicketTrader:
             s"[Buyer $peerAddress] MATCH -> vendor=${offer.vendorId}, event='${offer.eventName}', price=${offer.price}, location=${fmtCoordinate(offer.location)}",
           )
 
-  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, PlacementType, Multitier) ?=> V): V =
+  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Multitier) ?=> V): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
-    given mtHandler: Multitier = MultitierHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Multitier = MultitierHandler.handler[P]
     program
 
   def main(args: Array[String]): Unit =

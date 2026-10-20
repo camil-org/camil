@@ -47,8 +47,7 @@ object VitalsStreaming:
       val nextAtGatherer = comm[Device, Gatherer](nextAtDevice)
       on[Gatherer]:
         val msg = take(nextAtGatherer)
-        if validSignatures.contains(msg.signature.value) then
-          println(s"[Gatherer] ${pseudonymise(msg.content)}")
+        if validSignatures.contains(msg.signature.value) then println(s"[Gatherer] ${pseudonymise(msg.content)}")
       gather(tailAtDevice)
     else
       on[Gatherer]:
@@ -64,11 +63,11 @@ object VitalsStreaming:
     gather(scriptAtDevice)
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography) ?=> V,
+      program: (Network, Placement, Choreography) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given PlacementType = PlacementTypeHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
     given Choreography = ChoreographyHandler.handler[P]
     program
 

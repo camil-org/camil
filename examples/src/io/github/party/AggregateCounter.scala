@@ -34,11 +34,11 @@ object AggregateCounter:
       }
     Thread.sleep(5000) // Keep the program running for a while to observe the output
 
-  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, PlacementType, Collective) ?=> V): V =
+  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Collective) ?=> V): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: Placement = PlacementTypeHandler.handler[P]
-    given clHandler: Collective = CollectiveHandler.handle[P, net.PeerAddress, V]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Collective = CollectiveHandler.handle[P, net.PeerAddress, V]
     program
 
   def main(args: Array[String]): Unit =

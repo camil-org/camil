@@ -39,11 +39,11 @@ object PingPong:
       c += 1
       Thread.sleep(500) // Simulate some delay
 
-  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, PlacementType, Choreography) ?=> V): V =
+  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Choreography) ?=> V): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
-    given cHandler: Choreography = ChoreographyHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Choreography = ChoreographyHandler.handler[P]
     program
 
   def main(args: Array[String]): Unit =

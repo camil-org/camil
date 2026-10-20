@@ -45,7 +45,7 @@ object DistanceToSourceObstacle:
     given DistanceSensor = sensor(peerAddress.asInstanceOf[String], devicePositions)
     neighborDistanceObstacle(peerAddress == "node-2" || peerAddress == "node-3", peerAddress == "node-1")
 
-  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, PlacementType, Collective) ?=> V): V =
+  private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Collective) ?=> V): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
     given ptHandler: Placement = PlacementTypeHandler.handler[P]
