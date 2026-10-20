@@ -45,7 +45,6 @@ private final class InMemoryNetworkImpl[LocalPeer <: Peer: PeerTag](
   private val remoteSignalSubscriptions: TrieMap[Identifier, mutable.Set[PeerAddress]] = TrieMap.empty
 
   type PeerAddress = String
-  type KeyId = String
 
   override def reachablePeers: Set[PeerAddress] = broker.getAllPeers.filterNot(_ == address)
 
