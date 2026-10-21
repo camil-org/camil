@@ -38,7 +38,7 @@ object Broadcasting:
       G(source, id, identity, () => nbrRange)
 
   def broadcastingApp(using Network, Placement, Collective) =
-    given DistanceSensor = sensor(peerAddress.asInstanceOf[String], devicePositions)
+    given DistanceSensor = NbrSensor.sensor(devicePositions)
     val broadcastSignal = broadcasting(peerAddress == "node-1")
     val unitOf = on[Node]:
       take(broadcastSignal).subscribe { source =>

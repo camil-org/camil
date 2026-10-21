@@ -18,7 +18,6 @@ import io.github.party.placement.PeerScope.take
 import io.github.party.Collective.*
 import io.github.party.CollectiveBuildingBlocks.distanceTo
 import scala.concurrent.*
-import io.github.party.NbrSensor.sensor
 
 object DistanceToSourceObstacle:
   type Node <: { type Tie <: Multiple[Node] }
@@ -42,7 +41,7 @@ object DistanceToSourceObstacle:
       Thread.sleep(5000) // Keep the program running for a while to observe the output
 
   def neighborDistanceObstacleApp(using Network, Placement, Collective) =
-    given DistanceSensor = sensor(peerAddress.asInstanceOf[String], devicePositions)
+    given DistanceSensor = NbrSensor.sensor(devicePositions)
     neighborDistanceObstacle(peerAddress == "node-2" || peerAddress == "node-3", peerAddress == "node-1")
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Collective) ?=> V): V =

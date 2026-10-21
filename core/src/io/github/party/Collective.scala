@@ -110,7 +110,7 @@ object Collective:
     p: Placement,
     c: Collective,
     ec: ExecutionContext
-  )[V](round: FiniteDuration)(program: VM ?->{c} V): Signal[V] on P = on[P]:
+  )[V](round: FiniteDuration)(program: VM { type DeviceId = n.PeerAddress } ?->{c} V): Signal[V] on P = on[P]:
     type LocalVM = VM { type DeviceId = n.PeerAddress }
     given vm: (LocalVM^) = new VM:
       type DeviceId = n.PeerAddress

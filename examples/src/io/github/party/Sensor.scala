@@ -4,8 +4,9 @@ import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 import io.github.party.Collective.nbr
 
 object NbrSensor:
-  def sensor(localAddress: String, positions: Map[String, (Double, Double)])(using Collective): DistanceSensor = new DistanceSensor:
+  def sensor(positions: Map[String, (Double, Double)])(using Collective): DistanceSensor = new DistanceSensor:
     def nbrRange(using Collective, VM): Field[Double] =
+      val localAddress = summon[VM].deviceId.asInstanceOf[String]
       val localPos = positions(localAddress)
       nbr(localPos).map { position =>
         math.sqrt(

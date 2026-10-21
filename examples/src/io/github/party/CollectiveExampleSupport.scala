@@ -49,8 +49,8 @@ object CollectiveExampleSupport:
   def peerOrdinal(peerId: String): Int =
     peerId.stripPrefix("node-").toInt
 
-  def distanceSensor(topology: StaticTopology = Line4)(using Network, Collective): DistanceSensor =
-    NbrSensor.sensor(peerAddress.asInstanceOf[String], topology.positions)
+  def distanceSensor(topology: StaticTopology = Line4)(using Collective): DistanceSensor =
+    NbrSensor.sensor(topology.positions)
 
   def awaitLatest[V](signal: Signal[V], observationWindow: FiniteDuration): V =
     @volatile var latest: Option[V] = None

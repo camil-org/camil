@@ -23,7 +23,6 @@ import io.github.party.raise.Raise
 import io.github.party.CollectiveBuildingBlocks.*
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 import scala.collection.concurrent.TrieMap
-import io.github.party.NbrSensor.sensor
 
 object Channel:
   type Node <: { type Tie <: Multiple[Node] }
@@ -44,7 +43,7 @@ object Channel:
     distanceTo(source) + distanceTo(target) <= distanceBetween(source, target)
 
   def channelApp(using Network, Placement, Collective) =
-    given DistanceSensor = sensor(peerAddress.asInstanceOf[String], devicePositions)
+    given DistanceSensor = NbrSensor.sensor(devicePositions)
     val channelSignal = channel(peerAddress == "node-1", peerAddress == "node-4", 1)
     val unitOf = on[Node]:
       val channels = take(channelSignal)

@@ -88,16 +88,7 @@ object CityEvt:
       }
 
   def crowdMonitoring(using Network, Placement, Collective, Multitier) =
-    given DistanceSensor = new DistanceSensor:
-      val localPeer = peerAddress.asInstanceOf[String]
-      def nbrRange(using Collective, VM): Field[Double] =
-        val localPos = devicePositions(localPeer)
-        nbr(localPos).map { position =>
-          math.sqrt(
-            math.pow(localPos._1 - position._1, 2) +
-              math.pow(localPos._2 - position._2, 2),
-          )
-        }
+    given DistanceSensor = NbrSensor.sensor(devicePositions)
 
     val crowingLevel = Collective[Smartphone](1.seconds):
       rep(0.0): prev =>
