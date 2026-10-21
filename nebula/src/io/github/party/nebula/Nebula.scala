@@ -35,6 +35,7 @@ import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
+import scala.caps.Stateful
 
 object Nebula:
   type Coordinator <: { type Tie <: Multiple[Participant] & Single[Dashboard] }
@@ -58,7 +59,7 @@ object Nebula:
     "trainer-c" -> LocalDataset(18, Vector(0.50, -0.16, 0.12), (5.2, 0.0)),
   )
 
-  private final class NebulaState:
+  private final class NebulaState extends Stateful:
     var globalModel: Model on Coordinator = place(initialModel)
     var roundSummaries: Vector[RoundSummary] on Coordinator = place(Vector.empty)
     var latestTopology: Option[TopologyStatus] on Participant = place(None)
@@ -77,15 +78,16 @@ object Nebula:
   private def formatUpdate(update: LocalUpdate): String =
     s"${update.nodeId}@r${update.round}: samples=${update.samples}, ${formatMetrics(update.metrics)}, model=${pretty(update.model)}"
 
-  private def topologyAwareness(state: NebulaState)(using Network, Placement, Collective): Unit =
+  private def topologyAwareness(state: NebulaState^)(using Network, Placement, Collective): Unit =
     val localPeer = peerAddress.asInstanceOf[String]
     given DistanceSensor = new DistanceSensor:
       val localPosition = datasets(localPeer).position
       def nbrRange(using Collective, VM): Field[Double] =
-        io.github.party.Collective.nbr(localPosition).map: remotePosition =>
-          val dx = localPosition._1 - remotePosition._1
-          val dy = localPosition._2 - remotePosition._2
-          math.sqrt((dx * dx) + (dy * dy))
+        nbr(localPosition)
+          .map: remotePosition =>
+            val dx = localPosition._1 - remotePosition._1
+            val dy = localPosition._2 - remotePosition._2
+            math.sqrt((dx * dx) + (dy * dy))
 
     val topologySignal = Collective[Participant](RoundInterval):
       val rawRanges = nbrRange
@@ -123,8 +125,9 @@ object Nebula:
         if status.avgDistance > 0.0 || status.closeNeighbors > 0 then
           state.latestTopology = place(Some(status))
           println(s"[${status.nodeId}] topology -> ${formatTopology(status)}")
+  end topologyAwareness
 
-  private def trainingProtocol(state: NebulaState)(using Network, Placement, Choreography): Unit =
+  private def trainingProtocol(state: NebulaState^)(using Network, Placement, Choreography): Unit =
     def runRound(round: Int): Unit =
       if round > TotalRounds then ()
       else
@@ -175,8 +178,9 @@ object Nebula:
         runRound(round + 1)
 
     runRound(1)
+  end trainingProtocol
 
-  private def dashboardReport(state: NebulaState)(using Network, Placement, Multitier): Unit = Multitier:
+  private def dashboardReport(state: NebulaState^)(using Network, Placement, Multitier): Unit = Multitier:
     val finalModelAtCoordinator = on[Coordinator](take(state.globalModel))
     val summariesAtCoordinator = on[Coordinator](take(state.roundSummaries).toList)
     val topologyAtParticipants = on[Participant](take(state.latestTopology))
@@ -214,11 +218,11 @@ object Nebula:
     dashboardReport(state)
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography, Collective, Multitier) ?=> V,
+      program: (Network, Placement, Choreography, Collective, Multitier) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given PlacementType = PlacementTypeHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
     given Choreography = ChoreographyHandler.handler[P]
     given Collective = CollectiveHandler.handle[P, String, V]
     given Multitier = MultitierHandler.handler[P]

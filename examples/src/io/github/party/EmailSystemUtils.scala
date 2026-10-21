@@ -2,6 +2,7 @@ package io.github.party
 
 object EmailSystemUtils:
   type UserId = String
+  type Blob = Vector[Byte]
 
   trait MainServerDB:
     def getAttachments(emailId: Long): List[Attachment]
@@ -10,12 +11,12 @@ object EmailSystemUtils:
   trait MainDB:
     def updateAttachments(attachments: List[Attachment]): Unit
     def update(emails: List[Email]): Unit
-    def extractIds(emails: List[Email]): List[Long] =
-      emails.map(_.id)
+    def extractIds(emails: List[Email]): List[Long] = emails.map(_.id)
     def lastCheckout: Long
 
   case class Email(id: Long, subject: String, body: String, timestamp: Long, attachments: List[Attachment])
-  case class Attachment(filename: String, data: Array[Byte])
+
+  case class Attachment(filename: String, data: Blob)
 
   case class ClientConfig(userId: UserId, isOnFlatRate: Boolean)
 
@@ -28,10 +29,10 @@ object EmailSystemUtils:
         Email(3L, "Newsletter", "Monthly newsletter", 3000L, List.empty),
       ),
     )
-    private val attachments = Map(
-      1L -> List(Attachment("welcome.pdf", Array[Byte](1, 2, 3))),
-      2L -> List(Attachment("update.zip", Array[Byte](4, 5, 6))),
-      3L -> List(Attachment("newsletter.pdf", Array[Byte](7, 8, 9))),
+    private val attachments: Map[Long, List[Attachment]] = Map(
+      1L -> List(Attachment("welcome.pdf", Vector[Byte](1, 2, 3))),
+      2L -> List(Attachment("update.zip", Vector[Byte](4, 5, 6))),
+      3L -> List(Attachment("newsletter.pdf", Vector[Byte](7, 8, 9))),
     )
 
     def getAttachments(emailId: Long): List[Attachment] =

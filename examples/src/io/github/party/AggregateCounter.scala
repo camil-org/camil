@@ -24,15 +24,14 @@ import io.github.party.raise.Raise
 object AggregateCounter:
   type Smartphone <: { type Tie <: Multiple[Smartphone] }
 
-  private def counter(using Network, PlacementType^, Collective) =
+  private def counter(using Network, Placement, Collective) =
     val counter = Collective[Smartphone](1.second):
       rep(0)(_ + 1)
     on[Smartphone]:
       val signal = take(counter)
-      signal.subscribe { value =>
+      signal.subscribe: value =>
         println(s"Device ${peerAddress} has count: $value")
-      }
-    Thread.sleep(5000) // Keep the program running for a while to observe the output
+    Thread.sleep(5_000) // Keep the program running for a while to observe the output
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](program: (Network, Placement, Collective) ?=> V): V =
     given Network = net
@@ -46,9 +45,8 @@ object AggregateCounter:
     val smartphone1 = InMemoryNetwork[Smartphone]("smartphone-1", broker)
     val smartphone2 = InMemoryNetwork[Smartphone]("smartphone-2", broker)
 
-    val futures = Seq(smartphone1, smartphone2).map { net =>
+    val futures = Seq(smartphone1, smartphone2).map: net =>
       scala.concurrent.Future:
         handleProgramForPeer[Smartphone](net)(counter)
-    }
     scala.concurrent.Await.result(scala.concurrent.Future.sequence(futures), Duration.Inf)
 end AggregateCounter
