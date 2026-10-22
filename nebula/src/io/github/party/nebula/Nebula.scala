@@ -36,6 +36,7 @@ import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
 import scala.caps.Stateful
+import scala.caps.SharedCapability
 
 object Nebula:
   type Coordinator <: { type Tie <: Multiple[Participant] & Single[Dashboard] }
@@ -59,7 +60,7 @@ object Nebula:
     "trainer-c" -> LocalDataset(18, Vector(0.50, -0.16, 0.12), (5.2, 0.0)),
   )
 
-  private final class NebulaState extends Stateful:
+  private final class NebulaState extends Stateful, SharedCapability:
     var globalModel: Model on Coordinator = place(initialModel)
     var roundSummaries: Vector[RoundSummary] on Coordinator = place(Vector.empty)
     var latestTopology: Option[TopologyStatus] on Participant = place(None)
@@ -78,7 +79,7 @@ object Nebula:
   private def formatUpdate(update: LocalUpdate): String =
     s"${update.nodeId}@r${update.round}: samples=${update.samples}, ${formatMetrics(update.metrics)}, model=${pretty(update.model)}"
 
-  private def topologyAwareness(state: NebulaState^)(using Network, Placement, Collective): Unit =
+  private def topologyAwareness(state: NebulaState)(using Network, Placement, Collective): Unit =
     val localPeer = peerAddress.asInstanceOf[String]
     given DistanceSensor = new DistanceSensor:
       val localPosition = datasets(localPeer).position
@@ -127,7 +128,7 @@ object Nebula:
           println(s"[${status.nodeId}] topology -> ${formatTopology(status)}")
   end topologyAwareness
 
-  private def trainingProtocol(state: NebulaState^)(using Network, Placement, Choreography): Unit =
+  private def trainingProtocol(state: NebulaState)(using Network, Placement, Choreography): Unit =
     def runRound(round: Int): Unit =
       if round > TotalRounds then ()
       else
@@ -180,7 +181,7 @@ object Nebula:
     runRound(1)
   end trainingProtocol
 
-  private def dashboardReport(state: NebulaState^)(using Network, Placement, Multitier): Unit = Multitier:
+  private def dashboardReport(state: NebulaState)(using Network, Placement, Multitier): Unit = Multitier:
     val finalModelAtCoordinator = on[Coordinator](take(state.globalModel))
     val summariesAtCoordinator = on[Coordinator](take(state.roundSummaries).toList)
     val topologyAtParticipants = on[Participant](take(state.latestTopology))
