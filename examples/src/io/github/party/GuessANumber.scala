@@ -19,7 +19,6 @@ import io.github.party.peers.Peers.Cardinality.*
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.on
 import io.github.party.raise.Raise
 import io.github.party.signal.Signal

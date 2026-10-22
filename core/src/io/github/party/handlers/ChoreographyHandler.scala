@@ -1,9 +1,8 @@
 package io.github.party.handlers
 
 import io.github.party.peers.Peers.{Peer, PeerTag, TiedManyWith, TiedSingleWith}
-import io.github.party.placement.PlacementType
 import io.github.party.Choreography
-import io.github.party.network.{Network, NetworkError, Identifier}
+import io.github.party.network.{Network, NetworkError}
 import io.github.party.placement.PlacementType.*
 import io.github.party.utils.Utils.{selectWithDefault, select}
 import io.github.party.raise.Raise

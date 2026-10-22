@@ -1,15 +1,11 @@
 package io.github.party.placement
 
-import io.github.party.network.{Identifier, Network}
-import io.github.party.peers.Peers
 import io.github.party.placement.PeerScope
 import io.github.party.peers.Peers.*
 import PlacementType.*
 import scala.caps.Mutable
 import io.github.party.network.Identifier
 import io.github.party.network.Network
-import scala.caps.ExclusiveCapability
-import scala.annotation.targetName
 import scala.reflect.ClassTag
 
 type Placement = PlacementType^

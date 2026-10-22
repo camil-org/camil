@@ -2,7 +2,6 @@ package io.github.party
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scala.caps.SharedCapability
 import io.github.party.handlers.FieldImpl
 
 class FieldSpec extends AnyFlatSpec with Matchers:

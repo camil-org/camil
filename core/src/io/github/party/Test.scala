@@ -1,18 +1,16 @@
 package io.github.party
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import io.github.party.Choreography
-import io.github.party.Choreography.*
-import io.github.party.Multitier.*
 import io.github.party.network.Network
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.placement.PeerScope.*
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.*
-import io.github.party.signal.Signal
-import io.github.party.signal.Signal.signalBuilder
+
+//import scala.concurrent.ExecutionContext.Implicits.global
+//import io.github.party.placement.PlacementType
+//import io.github.party.placement.PeerScope.*
+//import io.github.party.Choreography
+//import io.github.party.Choreography.*
+//import io.github.party.Multitier.*
 
 object Test:
   type Pinger <: { type Tie <: Single[Ponger] }

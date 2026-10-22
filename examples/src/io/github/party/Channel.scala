@@ -5,7 +5,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration.DurationDouble
 
 import io.github.party.Collective
-import io.github.party.Collective.*
 import io.github.party.distributed.InMemoryNetwork
 import io.github.party.handlers.CollectiveHandler
 import io.github.party.handlers.PlacementTypeHandler
@@ -22,7 +21,6 @@ import io.github.party.placement.PlacementType.on
 import io.github.party.raise.Raise
 import io.github.party.CollectiveBuildingBlocks.*
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor
-import scala.collection.concurrent.TrieMap
 
 object Channel:
   type Node <: { type Tie <: Multiple[Node] }

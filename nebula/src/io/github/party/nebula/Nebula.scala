@@ -31,7 +31,6 @@ import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise

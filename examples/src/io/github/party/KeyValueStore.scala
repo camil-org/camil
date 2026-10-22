@@ -4,19 +4,15 @@ import io.github.party.peers.Peers.Cardinality.*
 import io.github.party.network.Network
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.*
-import io.github.party.signal.Signal.signalBuilder
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.party.placement.PeerScope.take
-import io.github.party.network.Network.reachablePeersOf
 import io.github.party.Choreography.broadcast
 import io.github.party.Choreography.multicast
 import io.github.party.Choreography.comm
-import java.util.UUID
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
-import io.github.party.placement.PlacementType
 import io.github.party.raise.Raise
 import io.github.party.network.NetworkError
 import io.github.party.handlers.PlacementTypeHandler

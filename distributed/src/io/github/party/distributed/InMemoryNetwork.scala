@@ -1,20 +1,14 @@
 package io.github.party.distributed
 
-import java.util.UUID
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{ ConcurrentLinkedQueue, LinkedBlockingQueue, TimeUnit }
+import java.util.concurrent.{ ConcurrentLinkedQueue, LinkedBlockingQueue }
 
 import scala.annotation.tailrec
-import scala.caps.SharedCapability
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Promise
 import scala.concurrent.duration.*
-import scala.util.Try
 
 import io.github.party.network.NetworkEvent
 import io.github.party.network.{ Identifier, Network, NetworkError }
@@ -25,7 +19,6 @@ import io.github.party.raise.Raise.raise
 import io.github.party.signal.Emitter
 import io.github.party.signal.Signal
 import io.github.party.signal.Signal.SignallingImpl
-import io.github.party.signal.Subscription
 
 /**
  * In-memory network implementation simulating distributed peers communication.
