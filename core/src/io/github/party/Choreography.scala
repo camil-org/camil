@@ -4,8 +4,7 @@ import scala.compiletime.Erased
 
 import io.github.party.network.Network
 import io.github.party.peers.Peers.*
-import io.github.party.placement.PlacementType
-import io.github.party.placement.PlacementType.*
+import io.github.party.placement.PlacementType.on
 
 trait Choreography extends Multiparty:
   def comm[S <: TiedSingleWith[R]: PeerTag, R <: TiedSingleWith[S]: PeerTag](using Network)[V](placement: V on S): V on R
@@ -19,25 +18,21 @@ object Choreography:
   def comm[S <: TiedSingleWith[R]: PeerTag, R <: TiedSingleWith[S]: PeerTag](using
       c: Choreography,
       n: Network,
-      p: PlacementType,
   )[V, SC](placement: V on S)(using Scope[SC], SC =:= ChoreographyScope): V on R = c.comm[S, R](placement)
 
   def multicast[S <: TiedManyWith[R]: PeerTag, R <: TiedSingleWith[S]: PeerTag](using
       c: Choreography,
       n: Network,
-      p: PlacementType,
   )[V, SC](placement: V on S)(using Scope[SC], SC =:= ChoreographyScope): V on R = c.multicast[S, R](placement)
 
   def gather[S <: TiedSingleWith[R]: PeerTag, R <: TiedManyWith[S]: PeerTag](using
       c: Choreography,
       n: Network,
-      p: PlacementType,
   )[V, SC](placement: V on S)(using Scope[SC], SC =:= ChoreographyScope): Map[n.PeerAddress, V] on R = c.gather[S, R](placement)
 
   def broadcast[S <: Peer: PeerTag, V](using
       c: Choreography,
       n: Network,
-      p: PlacementType,
   )(placement: V on S)[SC](using Scope[SC], SC =:= ChoreographyScope): V = c.broadcast[S, V](placement)
 
   def apply[A](using Choreography)(choreography: Scope[ChoreographyScope] ?=> A): A =
