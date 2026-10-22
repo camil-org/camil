@@ -85,7 +85,6 @@ object CityEvt:
       asLocal[Smartphone, Edge](recommendations).filter(_._1 == peerAddress.asInstanceOf[String]).map(_._2).subscribe { recommendation =>
         println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
       }
-      ()
 
   def crowdMonitoring(using Network, Placement, Collective, Multitier) =
     given DistanceSensor = new DistanceSensor:
