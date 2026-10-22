@@ -8,7 +8,7 @@ import io.github.party.placement.PlacementType.*
 import io.github.party.utils.Utils.{selectWithDefault, select}
 import io.github.party.raise.Raise
 import io.github.party.raise.Raise.*
-import io.github.party.errors.LocixError
+import io.github.party.errors.CamilError
 
 private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[NetworkError]) extends Choreography:
   private val namespace = Some("choreography")
@@ -27,7 +27,7 @@ private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[Ne
         val remotePeer = reachablePeers.head
         val value = placement match
           case PlacementValue.Local(v, _) => v
-          case _ => raise(NetworkError.RuntimeError(LocixError.ExpectLocalValue(key, sender.toString)))
+          case _ => raise(NetworkError.RuntimeError(CamilError.ExpectLocalValue(key, sender.toString)))
         n.push[S, R, V](remotePeer, key, value)
         PlacementValue.Remote(key)
       },
@@ -55,7 +55,7 @@ private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[Ne
         }
         val value = placement match
           case PlacementValue.Local(v, _) => v
-          case _ => raise(NetworkError.RuntimeError(LocixError.ExpectLocalValue(key, sender.toString)))
+          case _ => raise(NetworkError.RuntimeError(CamilError.ExpectLocalValue(key, sender.toString)))
         reachablePeers.foreach(n.push[S, R, V](_, key, value))
         PlacementValue.Remote(key)
       },
@@ -94,7 +94,7 @@ private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[Ne
     val value = select(local, sender)(
       onLocal = placement match
         case PlacementValue.Local(v, _) => v
-        case _ => raise(NetworkError.RuntimeError(LocixError.ExpectLocalValue(key, sender.toString))),
+        case _ => raise(NetworkError.RuntimeError(CamilError.ExpectLocalValue(key, sender.toString))),
       onRemote = n.retrieve[S, V](key)
     )
     n.broadcast(key, value)
@@ -102,7 +102,7 @@ private final class ChoreographyEffectImpl[P <: Peer: PeerTag](using r: Raise[Ne
 
 object ChoreographyHandler:
   def run[P <: Peer: PeerTag](using r: Raise[NetworkError])[V](program: Choreography^ ?=> V): V =
-    given (Choreography^{r}) = ChoreographyEffectImpl[P]
+    given (Choreography^) = ChoreographyEffectImpl[P]
     program
 
   def handler[P <: Peer: PeerTag](using Raise[NetworkError]): Choreography = ChoreographyEffectImpl[P]

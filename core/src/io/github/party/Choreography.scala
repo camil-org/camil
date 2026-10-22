@@ -1,8 +1,5 @@
 package io.github.party
 
-import scala.caps.Control
-import scala.caps.SharedCapability
-import scala.caps.cap
 import scala.compiletime.Erased
 
 import io.github.party.network.Network
@@ -43,7 +40,7 @@ object Choreography:
       p: PlacementType,
   )(placement: V on S)[SC](using Scope[SC], SC =:= ChoreographyScope): V = c.broadcast[S, V](placement)
 
-  def apply[A](using c: Choreography)(choreography: Scope[ChoreographyScope] ?=> A): A =
+  def apply[A](using Choreography)(choreography: Scope[ChoreographyScope] ?=> A): A =
     val scope = new Scope[ChoreographyScope] {}
     choreography(using scope)
 end Choreography

@@ -51,7 +51,7 @@ object TicTacToe:
   // Board
   // ──────────────────────────────────────────────────────────────────────────
 
-  case class Board(cells: Array[Char]):
+  case class Board(cells: Vector[Char]):
     def draw(): Unit =
       for i <- (0 until 3).reverse do
         val offset = i * 3
@@ -76,13 +76,11 @@ object TicTacToe:
         Status.Tie
 
     def mark(player: Char, pos: Int): Board =
-      val newCells = cells.clone()
-      newCells(pos) = player
-      Board(newCells)
+      Board(cells.updated(pos, player))
   end Board
 
   object Board:
-    def empty: Board = Board(Array.tabulate(9)(i => Character.forDigit(i, 10)))
+    def empty: Board = Board(Vector.tabulate(9)(i => Character.forDigit(i, 10)))
 
   // ──────────────────────────────────────────────────────────────────────────
   // Brain trait — decides the next move
@@ -175,11 +173,11 @@ object TicTacToe:
   // ──────────────────────────────────────────────────────────────────────────
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography) ?=> V,
+      program: (Network, Placement, Choreography) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
+    given ptHandler: Placement = PlacementTypeHandler.handler[P]
     given cHandler: Choreography = ChoreographyHandler.handler[P]
     program
 

@@ -86,11 +86,11 @@ object DistAuth:
       authenticate(credentialsAtClient)
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography) ?=> V,
+      program: (Network, Placement, Choreography) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given PlacementType = PlacementTypeHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
     given Choreography = ChoreographyHandler.handler[P]
     program
 

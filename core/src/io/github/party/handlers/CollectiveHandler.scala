@@ -21,7 +21,7 @@ private[party] case class FieldImpl[+V, DeviceId](localId: DeviceId, override va
     FieldImpl(localId, local, combinedValues.toMap)
 
 private final class CollectiveHandlerImpl[P <: Peer: PeerTag, Id] extends Collective:
-  def rep[V](using vm: VM)(initial: V)(evolution: V ->{this} V): V =
+  def rep[V](using vm: VM)(initial: V)(evolution: V ->{this, vm} V): V =
     vm.align("rep")
     val result = evolution(vm.getStateAt(vm.currentPath).getOrElse(initial))
     vm.setStateAt(vm.currentPath, result)
@@ -35,7 +35,7 @@ private final class CollectiveHandlerImpl[P <: Peer: PeerTag, Id] extends Collec
     vm.dealign()
     FieldImpl(vm.deviceId, value, neighbors)
 
-  def branch[V](using vm: VM)(condition: Boolean)(trueBranch: ->{this} V)(falseBranch: ->{this} V): V =
+  def branch[V](using vm: VM)(condition: Boolean)(trueBranch: ->{this, vm} V)(falseBranch: ->{this, vm} V): V =
     vm.align(s"branch[$condition]")
     val result = if condition then trueBranch else falseBranch
     vm.dealign()

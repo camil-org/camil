@@ -52,8 +52,7 @@ object TokenRing:
 
   private def predecessorOf(localAddress: String, ringMembers: Vector[String]): String =
     val index = ringMembers.indexOf(localAddress)
-    if index < 0 then
-      throw IllegalArgumentException(s"Peer '$localAddress' is not in ring members: ${ringMembers.mkString(", ")}")
+    if index < 0 then throw IllegalArgumentException(s"Peer '$localAddress' is not in ring members: ${ringMembers.mkString(", ")}")
     ringMembers((index - 1 + ringMembers.size) % ringMembers.size)
 
   private def signalKeyFor(address: String): Identifier =
@@ -87,30 +86,26 @@ object TokenRing:
       predecessorSignal.subscribe:
         case (receiver, token) =>
           val current = seen.incrementAndGet()
-          if receiver == localId then
-            println(s"""[$localAddress] received: "$token" on: $localId""")
-          else
-            outboundEmitter.emit((receiver, token))
-          if current >= ringMembers.size then
-            done.countDown()
+          if receiver == localId then println(s"""[$localAddress] received: "$token" on: $localId""")
+          else outboundEmitter.emit((receiver, token))
+          if current >= ringMembers.size then done.countDown()
 
       val waitBeforeEmitMs = emitNotBeforeEpochMs - System.currentTimeMillis()
       if waitBeforeEmitMs > 0 then Thread.sleep(waitBeforeEmitMs)
       outboundEmitter.emit(localId -> s"token for $localId")
 
       val completed = done.await(completionTimeoutMs, TimeUnit.MILLISECONDS)
-      if !completed then
-        println(s"[$localAddress] timeout waiting for ring completion (${seen.get()}/${ringMembers.size} tokens seen).")
+      if !completed then println(s"[$localAddress] timeout waiting for ring completion (${seen.get()}/${ringMembers.size} tokens seen).")
 
       outboundEmitter.close()
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Multitier) ?=> V,
+      program: (Network, Placement, Multitier) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given ptHandler: PlacementType = PlacementTypeHandler.handler[P]
-    given mtHandler: Multitier = MultitierHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
+    given Multitier = MultitierHandler.handler[P]
     program
 
   def main(args: Array[String]): Unit =
@@ -139,4 +134,5 @@ object TokenRing:
       Await.result(Future.sequence(futures.toSeq), Duration.Inf)
       println("TokenRing done.")
     finally runEc.shutdown()
+  end main
 end TokenRing

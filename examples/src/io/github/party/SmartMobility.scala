@@ -32,6 +32,8 @@ import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
 import io.github.party.NbrSensor.sensor
+import scala.caps.Stateful
+import scala.caps.SharedCapability
 
 object SmartMobility:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Vehicle] }
@@ -138,7 +140,7 @@ object SmartMobility:
     "junction-school" -> List("school-avenue"),
   )
 
-  private final class SmartMobilityState:
+  private final class SmartMobilityState extends Stateful, SharedCapability:
     var registeredVehicles: Map[String, VehicleToken] on Cloud = place(Map.empty)
     var vehicleToken: Option[VehicleToken] on Vehicle = place(None)
     var latestProbe: Option[TrafficProbe] on Vehicle = place(None)
@@ -237,21 +239,28 @@ object SmartMobility:
         intersectionId -> plan
 
   private def segmentPenalty(segment: String, snapshot: RoutingSnapshot): (Int, List[String]) =
-    val statusPenalty = snapshot.segmentStatuses.get(segment).toList.flatMap: status =>
-      List(
-        Option.when(status.hazardDetected)(18 -> s"$segment hazard +18"),
-        Option.when(status.congested)(4 -> s"$segment congestion +4"),
-      ).flatten
-    val planPenalty = snapshot.lightPlans.values.find(_.managedSegments.contains(segment)).toList.flatMap: plan =>
-      plan.mode match
-        case "caution" => List(6 -> s"${plan.intersectionId} caution +6")
-        case "extend-green" if plan.prioritySegment.contains(segment) => List(-2 -> s"${plan.intersectionId} green wave -2")
-        case "extend-green" => List(2 -> s"${plan.intersectionId} cross-flow +2")
-        case _ => Nil
+    val statusPenalty = snapshot.segmentStatuses
+      .get(segment)
+      .toList
+      .flatMap: status =>
+        List(
+          Option.when(status.hazardDetected)(18 -> s"$segment hazard +18"),
+          Option.when(status.congested)(4 -> s"$segment congestion +4"),
+        ).flatten
+    val planPenalty = snapshot.lightPlans.values
+      .find(_.managedSegments.contains(segment))
+      .toList
+      .flatMap: plan =>
+        plan.mode match
+          case "caution" => List(6 -> s"${plan.intersectionId} caution +6")
+          case "extend-green" if plan.prioritySegment.contains(segment) => List(-2 -> s"${plan.intersectionId} green wave -2")
+          case "extend-green" => List(2 -> s"${plan.intersectionId} cross-flow +2")
+          case _ => Nil
     val allPenalties = statusPenalty ++ planPenalty
     val total = allPenalties.map(_._1).sum
     val reasons = allPenalties.map(_._2)
     (total, reasons)
+  end segmentPenalty
 
   private def recommendRoute(request: RouteRequest, snapshot: RoutingSnapshot): RouteRecommendation =
     val scoredOptions = request.options.map: option =>
@@ -285,8 +294,10 @@ object SmartMobility:
       val registry = issuedTokens.toMap
       state.registeredVehicles = place(registry)
       println(s"[cloud] registered ${registry.size} vehicle(s)")
-      registry.toList.sortBy(_._1).foreach: (vehicleId, token) =>
-        println(s"[cloud] issued ${token.value} to $vehicleId")
+      registry.toList
+        .sortBy(_._1)
+        .foreach: (vehicleId, token) =>
+          println(s"[cloud] issued ${token.value} to $vehicleId")
       registry
 
     on[Vehicle]:
@@ -330,6 +341,7 @@ object SmartMobility:
       take(trafficSignal).subscribe: probe =>
         state.latestProbe = place(Some(probe))
         println(s"[${probe.vehicleId}] probe -> ${formatProbe(probe)}")
+  end trafficSensingPhase
 
   private def signalCoordinationPhase(state: SmartMobilityState)(using Network, Placement, Multitier): Unit = Multitier:
     val latestProbeAtVehicle = on[Vehicle]:
@@ -345,12 +357,16 @@ object SmartMobility:
       state.latestRoutingSnapshot = place(Some(snapshot))
 
       println("\n[edge] segment status summary")
-      segmentStatuses.values.toList.sortBy(_.segmentId).foreach: status =>
-        println(s" - ${formatSegmentStatus(status)}")
+      segmentStatuses.values.toList
+        .sortBy(_.segmentId)
+        .foreach: status =>
+          println(s" - ${formatSegmentStatus(status)}")
 
       println("[edge] traffic light plans")
-      lightPlans.values.toList.sortBy(_.intersectionId).foreach: plan =>
-        println(s" - ${formatLightPlan(plan)}")
+      lightPlans.values.toList
+        .sortBy(_.intersectionId)
+        .foreach: plan =>
+          println(s" - ${formatLightPlan(plan)}")
 
   private def routeRecommendationPhase(state: SmartMobilityState)(using Network, Placement, Choreography): Unit = Choreography:
     val routeRequestAtVehicle = on[Vehicle]:
@@ -383,21 +399,23 @@ object SmartMobility:
     val recommendationsAtCloud = on[Cloud]:
       val (requests, snapshot) = take(batchAtCloud)
       val registry = take(state.registeredVehicles)
-      val recommendations = requests.values.toList.sortBy(_.vehicleId).map: request =>
-        val authenticated = registry.get(request.vehicleId).contains(request.token)
-        val recommendation =
-          if authenticated then recommendRoute(request, snapshot)
-          else
-            RouteRecommendation(
-              vehicleId = request.vehicleId,
-              selected = request.options.head,
-              score = 9999,
-              rationale = "authentication failed",
-              authenticated = false,
-            )
-        val decision = if authenticated then "accepted" else "rejected"
-        println(s"[cloud] $decision ${request.vehicleId} -> ${formatRecommendation(recommendation)}")
-        request.vehicleId -> recommendation
+      val recommendations = requests.values.toList
+        .sortBy(_.vehicleId)
+        .map: request =>
+          val authenticated = registry.get(request.vehicleId).contains(request.token)
+          val recommendation =
+            if authenticated then recommendRoute(request, snapshot)
+            else
+              RouteRecommendation(
+                vehicleId = request.vehicleId,
+                selected = request.options.head,
+                score = 9999,
+                rationale = "authentication failed",
+                authenticated = false,
+              )
+          val decision = if authenticated then "accepted" else "rejected"
+          println(s"[cloud] $decision ${request.vehicleId} -> ${formatRecommendation(recommendation)}")
+          request.vehicleId -> recommendation
       val result = recommendations.toMap
       state.latestRecommendations = place(result)
       result
@@ -415,19 +433,28 @@ object SmartMobility:
       println("\n=== Smart Mobility Edge Summary ===")
       take(state.latestRoutingSnapshot) match
         case Some(snapshot) =>
-          snapshot.segmentStatuses.values.toList.sortBy(_.segmentId).foreach: status =>
-            println(s" - ${formatSegmentStatus(status)}")
-          snapshot.lightPlans.values.toList.sortBy(_.intersectionId).foreach: plan =>
-            println(s" - ${formatLightPlan(plan)}")
+          snapshot.segmentStatuses.values.toList
+            .sortBy(_.segmentId)
+            .foreach: status =>
+              println(s" - ${formatSegmentStatus(status)}")
+          snapshot.lightPlans.values.toList
+            .sortBy(_.intersectionId)
+            .foreach: plan =>
+              println(s" - ${formatLightPlan(plan)}")
         case None =>
           println(" - no routing snapshot available")
 
     on[Cloud]:
       println("\n=== Smart Mobility Cloud Summary ===")
-      take(state.registeredVehicles).toList.sortBy(_._1).foreach: (vehicleId, token) =>
-        println(s" - token $vehicleId -> ${token.value}")
-      take(state.latestRecommendations).values.toList.sortBy(_.vehicleId).foreach: recommendation =>
-        println(s" - ${formatRecommendation(recommendation)}")
+      take(state.registeredVehicles).toList
+        .sortBy(_._1)
+        .foreach: (vehicleId, token) =>
+          println(s" - token $vehicleId -> ${token.value}")
+      take(state.latestRecommendations).values.toList
+        .sortBy(_.vehicleId)
+        .foreach: recommendation =>
+          println(s" - ${formatRecommendation(recommendation)}")
+  end finalSummary
 
   private def smartMobilityApp(using Network, Placement, Multitier, Choreography, Collective): Unit =
     val state = SmartMobilityState()
@@ -439,11 +466,11 @@ object SmartMobility:
     finalSummary(state)
 
   private def handleProgramForPeer[P <: Peer: PeerTag](net: Network)[V](
-      program: (Network, PlacementType, Choreography, Collective, Multitier) ?=> V,
+      program: (Network, Placement, Choreography, Collective, Multitier) ?=> V,
   ): V =
     given Network = net
     given Raise[NetworkError] = Raise.rethrowError
-    given PlacementType = PlacementTypeHandler.handler[P]
+    given Placement = PlacementTypeHandler.handler[P]
     given Choreography = ChoreographyHandler.handler[P]
     given Collective = CollectiveHandler.handle[P, String, V]
     given Multitier = MultitierHandler.handler[P]
@@ -470,4 +497,5 @@ object SmartMobility:
     )
 
     Await.result(Future.sequence(futures), Duration.Inf)
+  end main
 end SmartMobility
