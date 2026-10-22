@@ -2,11 +2,8 @@ package io.github.party
 
 import io.github.party.peers.Peers.*
 import scala.compiletime.Erased
-import io.github.party.placement.{PlacementType}
 import io.github.party.network.Network
-import io.github.party.signal.Signal
 import io.github.party.placement.PlacementType.on
-import scala.caps.SharedCapability
 import io.github.party.placement.PeerScope
 
 trait Multitier extends Multiparty:

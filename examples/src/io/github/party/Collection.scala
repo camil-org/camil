@@ -3,7 +3,6 @@ package io.github.party
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import io.github.party.Collective
-import io.github.party.Collective.*
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 import io.github.party.CollectiveExampleSupport.*
 import io.github.party.network.Network

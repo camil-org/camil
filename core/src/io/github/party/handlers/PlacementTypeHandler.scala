@@ -1,8 +1,5 @@
 package io.github.party.handlers
 
-import io.github.party.network.{Identifier, Network, NetworkError}
-import io.github.party.peers.Peers
-import io.github.party.placement.PeerScope
 import io.github.party.placement.{PlacementType, PeerScope}
 import io.github.party.placement.PlacementType.*
 import io.github.party.peers.Peers.Peer
@@ -13,7 +10,6 @@ import io.github.party.network.NetworkError
 import io.github.party.raise.Raise
 import io.github.party.utils.Utils.select
 import io.github.party.signal.Signal
-import scala.annotation.nowarn
 import scala.reflect.ClassTag
 
 private final class PlacementTypeHandler[L <: Peer: PeerTag] extends PlacementType:

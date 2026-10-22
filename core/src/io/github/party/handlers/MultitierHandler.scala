@@ -1,15 +1,12 @@
 package io.github.party.handlers
 
 import io.github.party.peers.Peers.{Peer, PeerTag}
-import io.github.party.network.{Network, NetworkError, Identifier}
+import io.github.party.network.{Network, NetworkError}
 import io.github.party.Multitier
 import io.github.party.raise.Raise
-import io.github.party.placement.PlacementType
 import io.github.party.peers.Peers.TiedManyWith
 import io.github.party.peers.Peers.TiedSingleWith
 import io.github.party.raise.Raise.ensure
-import io.github.party.signal.Signal
-import java.util.concurrent.ConcurrentLinkedQueue
 import io.github.party.placement.PlacementType.on
 
 private final class MultitierEffectImpl[P <: Peer: PeerTag](using r: Raise[NetworkError]) extends Multitier:

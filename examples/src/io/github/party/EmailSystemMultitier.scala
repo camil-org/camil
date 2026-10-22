@@ -10,7 +10,6 @@ import io.github.party.EmailSystemUtils.createClientDB
 import io.github.party.EmailSystemUtils.createServerDB
 import io.github.party.Multitier.*
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.ChoreographyHandler
 import io.github.party.handlers.MultitierHandler
 import io.github.party.handlers.PlacementTypeHandler
 import io.github.party.network.Network
@@ -20,7 +19,6 @@ import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.on
 import io.github.party.raise.Raise
 

@@ -4,7 +4,6 @@ import io.github.party.peers.Peers.Cardinality.*
 import io.github.party.network.Network
 import io.github.party.network.NetworkError
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.placement.PlacementType.*
 import io.github.party.Multitier.*
 import io.github.party.peers.Peers.*

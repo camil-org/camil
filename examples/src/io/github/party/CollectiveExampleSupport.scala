@@ -16,12 +16,10 @@ import io.github.party.distributed.InMemoryNetwork
 import io.github.party.handlers.CollectiveHandler
 import io.github.party.handlers.PlacementTypeHandler
 import io.github.party.network.Network
-import io.github.party.network.Network.peerAddress
 import io.github.party.network.NetworkError
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType
 import io.github.party.raise.Raise
 import io.github.party.signal.Signal
 

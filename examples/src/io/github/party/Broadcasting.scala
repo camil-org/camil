@@ -7,7 +7,6 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
-import io.github.party.placement.PlacementType
 import io.github.party.raise.Raise
 import io.github.party.network.NetworkError
 import io.github.party.handlers.*
@@ -17,9 +16,7 @@ import io.github.party.network.Network.peerAddress
 import io.github.party.placement.PlacementType.*
 import io.github.party.placement.PeerScope.*
 import io.github.party.CollectiveBuildingBlocks.*
-import io.github.party.Collective.nbr
 import scala.concurrent.*
-import NbrSensor.*
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor.nbrRange
 
 object Broadcasting:

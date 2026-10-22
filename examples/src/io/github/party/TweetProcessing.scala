@@ -11,7 +11,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.party.signal.Signal
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
-import io.github.party.placement.PlacementType
 import io.github.party.raise.Raise
 import io.github.party.network.NetworkError
 import io.github.party.handlers.PlacementTypeHandler

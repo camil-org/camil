@@ -5,13 +5,12 @@ import scala.concurrent.duration.FiniteDuration
 import scala.collection.mutable
 import scala.caps.Stateful
 
-import io.github.party.peers.Peers.{ Peer, PeerTag, TiedManyWith }
+import io.github.party.peers.Peers.{ PeerTag, TiedManyWith }
 import io.github.party.signal.Signal
 import io.github.party.signal.Signal.signalBuilder
-import io.github.party.placement.{ Placement, PlacementType, PeerScope }
+import io.github.party.placement.{ Placement, PeerScope }
 import io.github.party.placement.PlacementType.on
-import io.github.party.network.{ Network, NetworkError, Identifier }
-import io.github.party.raise.Raise
+import io.github.party.network.{ Network, Identifier }
 import scala.caps.SharedCapability
 
 sealed trait VM extends Stateful, SharedCapability:

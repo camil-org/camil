@@ -1,14 +1,10 @@
 package io.github.party.signal
 
-import io.github.party.network.Identifier
 import scala.concurrent.ExecutionContext
 import scala.collection.mutable
-import java.util.concurrent.CountDownLatch
 import scala.concurrent.Await
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import scala.collection.concurrent.TrieMap
-import io.github.party.network.Network
-import scala.caps.CapSet
 import scala.caps.unsafe.unsafeAssumePure
 import scala.concurrent.Promise
 import scala.concurrent.duration.Duration
