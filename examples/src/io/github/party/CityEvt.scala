@@ -31,6 +31,7 @@ import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor.nbrRange
 import io.github.party.Choreography
 import scala.caps.Stateful
+import scala.caps.SharedCapability
 
 object CityEvt:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Smartphone] }
@@ -43,7 +44,7 @@ object CityEvt:
 
   final case class Recommendation(content: String)
 
-  class CloudState extends Stateful:
+  class CloudState extends Stateful, SharedCapability:
     var registeredUsers: Map[String, Token] on Cloud = place(Map.empty)
 
   private val devicePositions = Map(
@@ -51,7 +52,7 @@ object CityEvt:
     "smartphone-2" -> (1.5, 0.0),
   )
 
-  def userRegistration(cloudState: CloudState^, userData: (String, String) on Smartphone)(using Network, Placement, Multitier) = Multitier:
+  def userRegistration(cloudState: CloudState, userData: (String, String) on Smartphone)(using Network, Placement, Multitier) = Multitier:
     val registration = on[Smartphone]:
       signalBuilder[RegistrationForm]: em =>
         Thread.sleep(1000) // Simulate user filling the registration form
@@ -68,26 +69,27 @@ object CityEvt:
       println(s"User ${peerAddress} with email ${take(userData)._2} has been registered with token: ${res}")
       res
 
-  def recommendation(cloudState: CloudState^, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier): Unit = Multitier:
-    val authRequests = on[Edge] { asLocalAll(smartphoneToken).toMap.map { case (k, v) => k.asInstanceOf[String] -> v } }
-    val grantedResults = Choreography:
-      val requests = comm[Edge, Cloud](authRequests)
-      val authGranted = on[Cloud]:
-        take(requests).map:
-          case (peerId, token) => peerId -> take(cloudState.registeredUsers).exists(_._2 == token)
-      comm[Cloud, Edge](authGranted)
-    val recommendations = on[Edge]:
-      val authPeers = take(grantedResults).filter(_._2).keySet
-      signalBuilder[(String, Recommendation)]: em =>
-        while true do
-          Thread.sleep(1000) // Simulate waiting for new recommendations
-          authPeers.foreach { peerId =>
-            em.emit(peerId -> Recommendation(s"Hello $peerId, here is your recommendation!"))
-          }
-    on[Smartphone]:
-      asLocal[Smartphone, Edge](recommendations).filter(_._1 == peerAddress.asInstanceOf[String]).map(_._2).subscribe { recommendation =>
-        println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
-      }
+  def recommendation(cloudState: CloudState, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier): Unit =
+    Multitier:
+      val authRequests = on[Edge] { asLocalAll(smartphoneToken).toMap.map { case (k, v) => k.asInstanceOf[String] -> v } }
+      val grantedResults = Choreography:
+        val requests = comm[Edge, Cloud](authRequests)
+        val authGranted = on[Cloud]:
+          take(requests).map:
+            case (peerId, token) => peerId -> take(cloudState.registeredUsers).exists(_._2 == token)
+        comm[Cloud, Edge](authGranted)
+      val recommendations = on[Edge]:
+        val authPeers = take(grantedResults).filter(_._2).keySet
+        signalBuilder[(String, Recommendation)]: em =>
+          while true do
+            Thread.sleep(1000) // Simulate waiting for new recommendations
+            authPeers.foreach { peerId =>
+              em.emit(peerId -> Recommendation(s"Hello $peerId, here is your recommendation!"))
+            }
+      on[Smartphone]:
+        asLocal[Smartphone, Edge](recommendations).filter(_._1 == peerAddress.asInstanceOf[String]).map(_._2).subscribe { recommendation =>
+          println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
+        }
 
   def crowdMonitoring(using Network, Placement, Collective, Multitier) =
     given DistanceSensor = NbrSensor.sensor(devicePositions)

@@ -33,6 +33,7 @@ import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
 import io.github.party.NbrSensor.sensor
 import scala.caps.Stateful
+import scala.caps.SharedCapability
 
 object SmartMobility:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Vehicle] }
@@ -139,7 +140,7 @@ object SmartMobility:
     "junction-school" -> List("school-avenue"),
   )
 
-  private final class SmartMobilityState extends Stateful:
+  private final class SmartMobilityState extends Stateful, SharedCapability:
     var registeredVehicles: Map[String, VehicleToken] on Cloud = place(Map.empty)
     var vehicleToken: Option[VehicleToken] on Vehicle = place(None)
     var latestProbe: Option[TrafficProbe] on Vehicle = place(None)
@@ -280,7 +281,7 @@ object SmartMobility:
       authenticated = true,
     )
 
-  private def registrationPhase(state: SmartMobilityState^)(using Network, Placement, Multitier): Unit = Multitier:
+  private def registrationPhase(state: SmartMobilityState)(using Network, Placement, Multitier): Unit = Multitier:
     val registrationAtVehicle = on[Vehicle]:
       val registration = registrationFor(peerAddress.asInstanceOf[String])
       println(s"[${registration.vehicleId}] entering the city via ${registration.entryGate}")
@@ -305,7 +306,7 @@ object SmartMobility:
       state.vehicleToken = place(Some(token))
       println(s"[$vehicleId] received credential ${token.value}")
 
-  private def trafficSensingPhase(state: SmartMobilityState^)(using Network, Placement, Collective): Unit =
+  private def trafficSensingPhase(state: SmartMobilityState)(using Network, Placement, Collective): Unit =
     given DistanceSensor = new DistanceSensor:
       def nbrRange(using Collective, VM): Field[Double] =
         val localPosition = telemetryFor(currentVehicleId).position
@@ -342,7 +343,7 @@ object SmartMobility:
         println(s"[${probe.vehicleId}] probe -> ${formatProbe(probe)}")
   end trafficSensingPhase
 
-  private def signalCoordinationPhase(state: SmartMobilityState^)(using Network, Placement, Multitier): Unit = Multitier:
+  private def signalCoordinationPhase(state: SmartMobilityState)(using Network, Placement, Multitier): Unit = Multitier:
     val latestProbeAtVehicle = on[Vehicle]:
       take(state.latestProbe)
 
@@ -367,7 +368,7 @@ object SmartMobility:
         .foreach: plan =>
           println(s" - ${formatLightPlan(plan)}")
 
-  private def routeRecommendationPhase(state: SmartMobilityState^)(using Network, Placement, Choreography): Unit = Choreography:
+  private def routeRecommendationPhase(state: SmartMobilityState)(using Network, Placement, Choreography): Unit = Choreography:
     val routeRequestAtVehicle = on[Vehicle]:
       val vehicleId = peerAddress.asInstanceOf[String]
       val localTelemetry = telemetryFor(vehicleId)
@@ -427,7 +428,7 @@ object SmartMobility:
       val recommendation = take(recommendationsAtVehicle)(vehicleId)
       println(s"[$vehicleId] recommended route -> ${formatRecommendation(recommendation)}")
 
-  private def finalSummary(state: SmartMobilityState^)(using Network, Placement): Unit =
+  private def finalSummary(state: SmartMobilityState)(using Network, Placement): Unit =
     on[Edge]:
       println("\n=== Smart Mobility Edge Summary ===")
       take(state.latestRoutingSnapshot) match
