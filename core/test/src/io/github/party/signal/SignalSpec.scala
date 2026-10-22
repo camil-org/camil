@@ -218,6 +218,19 @@ class SignalSpec extends AnyFlatSpec with Matchers with Eventually:
       receivedValues.synchronized:
         receivedValues.sorted should contain theSameElementsAs Seq("3", "5")
 
+  it should "close derived signals when the source closes" in:
+    val (signal, emitter) = Signal.make[Int]
+    val mappedSignal = signal.map(_ * 2)
+    val filteredSignal = signal.filter(_ % 2 == 0)
+    val closed = new CountDownLatch(2)
+
+    mappedSignal.onClose(() => closed.countDown())
+    filteredSignal.onClose(() => closed.countDown())
+
+    emitter.close()
+
+    closed.await(1, TimeUnit.SECONDS) shouldBe true
+
   it should "handle exceptions in callbacks gracefully" in:
     val (signal, emitter) = Signal.make[Int]
     val receivedValues = ArrayBuffer.empty[Int]
@@ -373,14 +386,17 @@ class SignalSpec extends AnyFlatSpec with Matchers with Eventually:
 
     val mappedSignal = signal.map(x => x * 2)
     val receivedValues = ArrayBuffer.empty[Int]
+    val closed = new CountDownLatch(1)
 
     mappedSignal.subscribe { value =>
       receivedValues.synchronized:
         receivedValues += value
     }
+    mappedSignal.onClose(() => closed.countDown())
 
     Thread.sleep(200)
 
+    closed.await(1, TimeUnit.SECONDS) shouldBe true
     receivedValues.synchronized:
       receivedValues shouldBe empty
 

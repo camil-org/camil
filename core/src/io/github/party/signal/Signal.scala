@@ -21,11 +21,11 @@ trait Subscription:
   def cancel(): Unit
 
 trait Signal[V]:
-  def subscribe(callback: V => Unit): Subscription
+  def subscribe(callback: V => Unit): Subscription^{this}
   def onClose(callback: () => Unit): Unit
-  def map[U](f: V -> U): Signal[U]
+  def map[U](f: V => U): Signal[U]^{this, f}
   def fold[U](initial: U)(f: (U, V) -> U): U
-  def filter(p: V => Boolean): Signal[V]
+  def filter(p: V => Boolean): Signal[V]^{this, p}
   def first: V
 
 object Signal:
@@ -76,17 +76,21 @@ object Signal:
         // Double-check in case close() happened between the first check and adding the callback
         if closed.get() then onCloseCallbacks.remove(id).foreach(_.apply())
 
-    override def map[U](f: V -> U): Signal[U] =
+    override def map[U](f: V => U): Signal[U]^{this, f} =
       val mappedSignal = new SignallingImpl[U]
-      subscribe: v =>
+      val upstream = subscribe: v =>
         val u = f(v)
         mappedSignal.emit(u)
+      mappedSignal.onClose(() => upstream.cancel())
+      onClose(() => mappedSignal.close())
       mappedSignal
 
-    override def filter(p: V => Boolean): Signal[V] =
+    override def filter(p: V => Boolean): Signal[V]^{this, p} =
       val filteredSignal = new SignallingImpl[V]
-      subscribe: v =>
+      val upstream = subscribe: v =>
         if p(v) then filteredSignal.emit(v)
+      filteredSignal.onClose(() => upstream.cancel())
+      onClose(() => filteredSignal.close())
       filteredSignal
 
     override def fold[U](initial: U)(f: (U, V) -> U): U =
@@ -104,7 +108,7 @@ object Signal:
       onCloseCallbacks.clear()
       callbacks.foreach(_.apply())
 
-    def emit(value: V): Unit = if !closed.get() then
+    override def emit(value: V): Unit = if !closed.get() then
       val candidates = bufferLock.synchronized:
         val subs = subscribers.values.toList
         if subs.isEmpty then
@@ -116,7 +120,7 @@ object Signal:
         try cb(value)
         catch case _: Throwable => ()
 
-    def subscribe(callback: V => Unit): Subscription =
+    override def subscribe(callback: V => Unit): Subscription^{this} =
       val id = counter.incrementAndGet()
       val buffered = bufferLock.synchronized:
         subscribers += (id -> unsafeAssumePure(callback))

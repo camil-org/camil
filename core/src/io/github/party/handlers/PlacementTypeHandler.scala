@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
 
 private final class PlacementTypeHandler[L <: Peer: PeerTag] extends PlacementType:
   private var counter = -1
-  update def on[P <: Peer: PeerTag, V: ClassTag](using Network)(body: PeerScope[P] ?=> V): V on P =
+  update def on[P <: Peer: PeerTag, V: ClassTag, C^](using Network)(body: PeerScope[P] ?=> V^{C}): V^{C} on P =
     val net = summon[Network]
     val local = summon[PeerTag[L]]
     val placedPeer = summon[PeerTag[P]]

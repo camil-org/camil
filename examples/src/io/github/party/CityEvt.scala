@@ -68,7 +68,7 @@ object CityEvt:
       println(s"User ${peerAddress} with email ${take(userData)._2} has been registered with token: ${res}")
       res
 
-  def recommendation(cloudState: CloudState^, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier) = Multitier:
+  def recommendation(cloudState: CloudState^, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier): Unit = Multitier:
     val authRequests = on[Edge] { asLocalAll(smartphoneToken).toMap.map { case (k, v) => k.asInstanceOf[String] -> v } }
     val grantedResults = Choreography:
       val requests = comm[Edge, Cloud](authRequests)

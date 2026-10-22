@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
 type Placement = PlacementType^
 
 trait PlacementType extends Mutable:
-  update def on[P <: Peer: PeerTag, V: ClassTag](using Network)(body: PeerScope[P] ?=> V): V on P
+  update def on[P <: Peer: PeerTag, V: ClassTag, C^](using Network)(body: PeerScope[P] ?=> V^{C}): V^{C} on P
 
   protected[party] update def freshKey[P <: Peer](namespace: Option[String] = None, metadata: Map[String, String] = Map.empty): Identifier
 
@@ -31,7 +31,7 @@ object PlacementType:
     case Local(value: V, override val key: Identifier) extends PlacementValue[V, P](key)
     case Remote(override val key: Identifier) extends PlacementValue[V, P](key)
 
-  def on[P <: Peer: PeerTag](using pt: PlacementType^, n: Network)[V: ClassTag](body: PeerScope[P] ?=> V): V on P =
+  def on[P <: Peer: PeerTag](using pt: PlacementType^, n: Network)[V: ClassTag, C^](body: PeerScope[P] ?=> V^{C}): V^{C} on P =
     pt.on(body)
 
   def place[P <: Peer, V](value: V): V on P =
