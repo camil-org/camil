@@ -14,7 +14,7 @@ import io.github.party.network.{ Network, NetworkError, Identifier }
 import io.github.party.raise.Raise
 import scala.caps.SharedCapability
 
-trait VM extends Stateful, SharedCapability:
+sealed trait VM extends Stateful, SharedCapability:
   type ValueTree = Map[String, Any]
   type Path = String
   type DeviceId

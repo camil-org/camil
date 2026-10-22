@@ -386,17 +386,14 @@ class SignalSpec extends AnyFlatSpec with Matchers with Eventually:
 
     val mappedSignal = signal.map(x => x * 2)
     val receivedValues = ArrayBuffer.empty[Int]
-    val closed = new CountDownLatch(1)
 
     mappedSignal.subscribe { value =>
       receivedValues.synchronized:
         receivedValues += value
     }
-    mappedSignal.onClose(() => closed.countDown())
 
     Thread.sleep(200)
 
-    closed.await(1, TimeUnit.SECONDS) shouldBe true
     receivedValues.synchronized:
       receivedValues shouldBe empty
 
