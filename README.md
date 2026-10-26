@@ -1,27 +1,64 @@
-# LociX
+<div align="center">
 
-> A capability-based Scala framework for typed multiparty distributed programming.
+# Camil
 
-LociX lets you express where code runs, which peers may communicate, and how values move across a distributed topology using a single Scala DSL. The repository includes the core abstractions, an in-memory runtime for local simulation, a broad example suite, and a Nebula-inspired demo that combines the supported paradigms.
+**A capability-based Scala framework for typed multiparty distributed programming.**
+
+[![CI/CD](https://github.com/camil-org/camil/actions/workflows/dispatcher.yml/badge.svg)](https://github.com/camil-org/camil/actions/workflows/dispatcher.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Scala 3.8.1](https://img.shields.io/badge/Scala-3.8.1-red.svg)](https://www.scala-lang.org)
+
+</div>
+
+Camil lets you express *where* code runs, *which* peers may communicate, and *how* values
+move across a distributed topology — all in a single Scala DSL. The repository ships the
+core abstractions, an in-memory runtime for local simulation, a broad example suite, and a
+Nebula-inspired demo that combines the supported paradigms.
 
 ## Features
 
-- Typed peer roles and topology constraints with `Single[...]` and `Multiple[...]`.
-- Choreographic primitives for explicit communication flows: `comm`, `broadcast`, `multicast`, and `gather`.
-- Multitier placement primitives such as `on`, `asLocal`, and `asLocalAll`.
-- Collective programming primitives such as `rep`, `nbr`, `branch`, and `mux`.
-- Reactive distributed values through `Signal`.
-- An in-memory `Network` implementation for runnable local experiments and tests.
-- End-to-end examples covering RPC-style interactions, master-worker allocation, aggregate computing, security protocols, and game/protocol case studies.
+- **Typed peers & topology** — peer roles and constraints via `Single[...]` and `Multiple[...]`.
+- **Choreography** — explicit communication flows: `comm`, `broadcast`, `multicast`, `gather`.
+- **Multitier placement** — colocate computation with data using `on`, `asLocal`, `asLocalAll`.
+- **Collective programming** — neighborhood-based primitives: `rep`, `nbr`, `branch`, `mux`.
+- **Reactive values** — distributed state propagation through `Signal`.
+- **In-memory runtime** — a `Network` implementation for runnable local experiments and tests.
+
+## Getting Started
+
+Camil builds with [Mill](https://mill-build.org) on Scala 3.8.1 (experimental capabilities enabled).
+A JDK 21+ is required.
+
+```bash
+# Run the test suite
+./mill core.test
+
+# Run an example
+./mill examples.runMain io.github.party.PingPong
+
+# Run the hybrid Nebula demo
+./mill nebula.runMain io.github.party.nebula.Nebula
+```
+
+> A reproducible dev shell is provided via Nix: run `nix develop` (or use `direnv`) to get
+> Mill, a JDK, and the native toolchain.
 
 ## Project Layout
 
-- `core`: peer typing, placements, choreography, multitier, collective, and signal primitives.
-- `distributed`: runtime support, including the in-memory network used by the examples.
-- `examples`: runnable examples and case studies built on top of the core DSL.
-- `nebula`: a compact federated-learning-style demo combining choreography, multitier, and collective logic.
+| Module        | Contents                                                                      |
+| ------------- | ----------------------------------------------------------------------------- |
+| `core`        | Peer typing, placements, choreography, multitier, collective, and signals.    |
+| `distributed` | Runtime support, including the in-memory network used by the examples.        |
+| `examples`    | Runnable examples and case studies built on the core DSL.                     |
+| `nebula`      | A compact federated-learning-style demo combining all three paradigms.        |
 
-## Choreography Example
+## The Three Paradigms
+
+Camil exposes three complementary styles of distributed programming. Pick the one that fits
+how you want to reason about communication.
+
+<details>
+<summary><b>Choreography</b> — communication described directly in program order</summary>
 
 ```scala
 import io.github.party.Choreography
@@ -51,9 +88,13 @@ object PingPong:
       println(take(pongOnPinger))
 ```
 
-This style is useful when the communication pattern is the main concern and you want it described directly in program order.
+Best when the communication pattern is the main concern and you want it spelled out
+step by step.
 
-## Multitier Example
+</details>
+
+<details>
+<summary><b>Multitier</b> — computation colocated with data, reads across placements stay explicit</summary>
 
 ```scala
 import io.github.party.Multitier
@@ -100,9 +141,13 @@ object MasterWorker:
       println(s"Master collected results: $results")
 ```
 
-This is useful when computation is colocated with data or devices, while reads across placements stay explicit and typed.
+Best when computation is colocated with data or devices, while cross-placement reads
+remain explicit and typed.
 
-## Collective Example
+</details>
+
+<details>
+<summary><b>Collective</b> — neighborhood-based, aggregate computations</summary>
 
 ```scala
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -129,44 +174,30 @@ object AggregateCounter:
         println(s"Device ${peerAddress} has count: $value")
 ```
 
-This layer is aimed at neighborhood-based and aggregate computations where each node evolves local state while observing nearby peers.
+Best for aggregate computations where each node evolves local state while observing
+nearby peers.
 
-## Runnable Examples
+</details>
 
-The [`examples`](./examples/src/io/github/party) module contains small runnable programs such as:
+## Examples
 
-- `PingPong`
-- `RemoteFunction`
-- `MasterWorker`
-- `AggregateCounter`
-- `Broadcasting`
-- `DistAuth`
-- `BuyerSellerShipper`
-- `TicTacToe`
-- `MergeSort`
+The [`examples`](./examples/src/io/github/party) module contains small, runnable programs:
 
-The [`nebula`](./nebula/src/io/github/party/nebula) module contains a larger hybrid example where:
+`PingPong` · `RemoteFunction` · `MasterWorker` · `AggregateCounter` · `Broadcasting` ·
+`DistAuth` · `BuyerSellerShipper` · `TicTacToe` · `MergeSort`
 
-- collective programming computes topology awareness and participation eligibility,
-- choreography coordinates training rounds and gathers updates,
-- multitier programming exposes the final state to a dashboard peer.
+The [`nebula`](./nebula/src/io/github/party/nebula) module is a larger hybrid demo where:
 
-## Running The Code
+- **collective** programming computes topology awareness and participation eligibility,
+- **choreography** coordinates training rounds and gathers updates,
+- **multitier** programming exposes the final state to a dashboard peer.
 
-The build uses Mill and Scala 3.8.1 with experimental capabilities enabled.
+## Contributing
 
-```bash
-./mill core.test
-./mill examples.runMain io.github.party.PingPong
-./mill examples.runMain io.github.party.MasterWorker
-./mill examples.runMain io.github.party.AggregateCounter
-./mill nebula.runMain io.github.party.nebula.Nebula
-```
+Contributions are welcome. By participating in this project you agree to abide by its
+[Code of Conduct](./CODE_OF_CONDUCT.md).
 
-For more runnable programs, inspect [`examples/src/io/github/party`](./examples/src/io/github/party).
+## License
 
-## License And Conduct
-
-LociX is distributed under the MIT License. Unless stated otherwise, the code in this repository is provided on an "as is" basis, without warranty of any kind. See [`LICENSE`](./LICENSE) for the full license text.
-
-Participation in this project is also governed by the repository [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+Camil is distributed under the [MIT License](./LICENSE). Unless stated otherwise, the code
+in this repository is provided on an "as is" basis, without warranty of any kind.
