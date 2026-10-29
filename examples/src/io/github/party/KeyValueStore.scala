@@ -1,27 +1,21 @@
 package io.github.party
 
+import scala.collection.mutable
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import io.github.party.Choreography
+import io.github.party.Choreography.{ broadcast, comm, multicast }
+import io.github.party.distributed.InMemoryNetwork
+import io.github.party.handlers.{ ChoreographyHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.network.Network.peerAddress
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.network.Network
+import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.*
-
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
-import io.github.party.placement.PeerScope.take
-import io.github.party.Choreography.broadcast
-import io.github.party.Choreography.multicast
-import io.github.party.Choreography.comm
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.raise.Raise
-import io.github.party.network.NetworkError
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.handlers.ChoreographyHandler
-import io.github.party.distributed.InMemoryNetwork
-import scala.concurrent.Future
-import scala.concurrent.Await
-import io.github.party.network.Network.peerAddress
-import io.github.party.Choreography
 
 object KeyValueStore:
   type Client <: { type Tie <: Single[Primary] }

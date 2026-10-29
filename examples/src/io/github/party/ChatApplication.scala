@@ -1,17 +1,17 @@
 package io.github.party
 
+import scala.concurrent.*
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import io.github.party.Multitier.*
+import io.github.party.distributed.InMemoryNetwork
+import io.github.party.handlers.*
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.peers.Peers.*
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.network.Network
-import io.github.party.network.NetworkError
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.*
-import io.github.party.Multitier.*
-import io.github.party.peers.Peers.*
 import io.github.party.raise.Raise
-import io.github.party.handlers.*
-import io.github.party.distributed.InMemoryNetwork
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.*
 
 object ChatApplication:
   type Server <: { type Tie <: Multiple[Client] }

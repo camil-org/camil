@@ -1,20 +1,17 @@
 package io.github.party
 
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{ Duration, DurationInt }
 
 import io.github.party.Collective
 import io.github.party.Collective.*
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.CollectiveHandler
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.network.Network
+import io.github.party.handlers.{ CollectiveHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
 import io.github.party.network.Network.peerAddress
-import io.github.party.network.NetworkError
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on
@@ -45,7 +42,7 @@ object AggregateCounter:
     val smartphone2 = InMemoryNetwork[Smartphone]("smartphone-2", broker)
 
     val futures = Seq(smartphone1, smartphone2).map: net =>
-      scala.concurrent.Future:
+      Future:
         handleProgramForPeer[Smartphone](net)(counter)
-    scala.concurrent.Await.result(scala.concurrent.Future.sequence(futures), Duration.Inf)
+    Await.result(Future.sequence(futures), Duration.Inf)
 end AggregateCounter

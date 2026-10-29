@@ -1,7 +1,7 @@
 package io.github.party
 
-import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 import io.github.party.Collective.nbr
+import io.github.party.CollectiveBuildingBlocks.DistanceSensor
 
 object NbrSensor:
   def sensor(positions: Map[String, (Double, Double)])(using Collective): DistanceSensor = new DistanceSensor:

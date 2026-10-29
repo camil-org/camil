@@ -1,20 +1,16 @@
 package io.github.party
 
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 import io.github.party.Multitier
 import io.github.party.Multitier.*
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.MultitierHandler
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.network.Network
+import io.github.party.handlers.{ MultitierHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
 import io.github.party.network.Network.*
-import io.github.party.network.NetworkError
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on

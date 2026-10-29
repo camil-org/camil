@@ -6,13 +6,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.party.Choreography
 import io.github.party.Choreography.*
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.ChoreographyHandler
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.network.Network
-import io.github.party.network.NetworkError
+import io.github.party.handlers.{ ChoreographyHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.*
 import io.github.party.raise.Raise

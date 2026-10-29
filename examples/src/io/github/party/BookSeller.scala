@@ -1,24 +1,20 @@
 package io.github.party
 
-import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.network.Network
-import io.github.party.network.Network.*
-import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType.on
-import io.github.party.Choreography.*
-import io.github.party.placement.PeerScope.take
-import io.github.party.placement.PlacementType.place
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
-import io.github.party.raise.Raise
-import io.github.party.network.NetworkError
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.handlers.ChoreographyHandler
-import io.github.party.distributed.InMemoryNetwork
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.Await
+
 import io.github.party.Choreography
+import io.github.party.Choreography.*
+import io.github.party.distributed.InMemoryNetwork
+import io.github.party.handlers.{ ChoreographyHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.network.Network.*
+import io.github.party.peers.Peers.{ Peer, PeerTag }
+import io.github.party.peers.Peers.Cardinality.*
+import io.github.party.placement.PeerScope.take
+import io.github.party.placement.Placement
+import io.github.party.placement.PlacementType.{ on, place }
+import io.github.party.raise.Raise
 
 object BookSeller:
   type Buyer <: { type Tie <: Single[Seller] }

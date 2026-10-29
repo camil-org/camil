@@ -1,24 +1,17 @@
 package io.github.party
 
 import scala.caps.unsafe.unsafeAssumePure
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{ Duration, DurationInt, FiniteDuration }
 
 import io.github.party.Collective
 import io.github.party.Collective.*
-import io.github.party.CollectiveBuildingBlocks.DistanceSensor
-import io.github.party.CollectiveBuildingBlocks.G
+import io.github.party.CollectiveBuildingBlocks.{ DistanceSensor, G }
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.CollectiveHandler
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.network.Network
-import io.github.party.network.NetworkError
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
+import io.github.party.handlers.{ CollectiveHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.placement.Placement
 import io.github.party.raise.Raise
 import io.github.party.signal.Signal

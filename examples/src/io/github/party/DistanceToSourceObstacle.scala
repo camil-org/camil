@@ -1,23 +1,21 @@
 package io.github.party
 
-import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.*
-import io.github.party.network.Network
-import io.github.party.placement.*
-import io.github.party.raise.Raise
-import io.github.party.network.NetworkError
-import io.github.party.handlers.*
-import io.github.party.distributed.InMemoryNetwork
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.DurationInt
-import io.github.party.CollectiveBuildingBlocks.DistanceSensor
-import io.github.party.network.Network.peerAddress
-import io.github.party.placement.PlacementType.on
-import io.github.party.placement.PeerScope.take
-import io.github.party.Collective.*
-import io.github.party.CollectiveBuildingBlocks.distanceTo
 import scala.concurrent.*
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{ Duration, DurationInt }
+
+import io.github.party.Collective.*
+import io.github.party.CollectiveBuildingBlocks.{ distanceTo, DistanceSensor }
+import io.github.party.distributed.InMemoryNetwork
+import io.github.party.handlers.*
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.network.Network.peerAddress
+import io.github.party.peers.Peers.*
+import io.github.party.peers.Peers.Cardinality.*
+import io.github.party.placement.*
+import io.github.party.placement.PeerScope.take
+import io.github.party.placement.PlacementType.on
+import io.github.party.raise.Raise
 
 object DistanceToSourceObstacle:
   type Node <: { type Tie <: Multiple[Node] }

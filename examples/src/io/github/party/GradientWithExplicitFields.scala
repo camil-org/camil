@@ -39,6 +39,7 @@ object GradientWithExplicitFields:
     on[Node]:
       val value = awaitLatest(take(gradient), convergenceWindow(Line4))
       println(f"[${peerAddress}] $value%.1f")
+  end gradientApp
 
   def main(args: Array[String]): Unit =
     runCollectiveExample[Node](gradientApp)

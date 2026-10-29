@@ -3,19 +3,18 @@ package io.github.party
 import scala.concurrent.*
 import scala.concurrent.ExecutionContext.Implicits.global
 
+import io.github.party.Choreography
 import io.github.party.Choreography.*
 import io.github.party.EmailSystemUtils.*
 import io.github.party.distributed.InMemoryNetwork
 import io.github.party.handlers.*
-import io.github.party.network.Network
-import io.github.party.network.NetworkError
+import io.github.party.network.{ Network, NetworkError }
 import io.github.party.peers.Peers.*
 import io.github.party.peers.Peers.Cardinality.*
 import io.github.party.placement.*
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.PlacementType.on
 import io.github.party.raise.Raise
-import io.github.party.Choreography
 
 object EmailSystemChoreo:
   type Client <: { type Tie <: Single[Server] }

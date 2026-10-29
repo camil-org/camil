@@ -1,23 +1,21 @@
 package io.github.party
 
-import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.network.Network
-import io.github.party.placement.Placement
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.ExecutionContext.Implicits.global
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
-import io.github.party.raise.Raise
-import io.github.party.network.NetworkError
-import io.github.party.handlers.*
-import io.github.party.distributed.InMemoryNetwork
-import scala.concurrent.duration.Duration
-import io.github.party.network.Network.peerAddress
-import io.github.party.placement.PlacementType.*
-import io.github.party.placement.PeerScope.*
-import io.github.party.CollectiveBuildingBlocks.*
 import scala.concurrent.*
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{ Duration, DurationInt }
+
+import io.github.party.CollectiveBuildingBlocks.*
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor.nbrRange
+import io.github.party.distributed.InMemoryNetwork
+import io.github.party.handlers.*
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.network.Network.peerAddress
+import io.github.party.peers.Peers.{ Peer, PeerTag }
+import io.github.party.peers.Peers.Cardinality.*
+import io.github.party.placement.PeerScope.*
+import io.github.party.placement.Placement
+import io.github.party.placement.PlacementType.*
+import io.github.party.raise.Raise
 
 object Broadcasting:
   type Node <: { type Tie <: Multiple[Node] }

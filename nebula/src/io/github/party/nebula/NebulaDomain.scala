@@ -35,9 +35,11 @@ object NebulaDomain:
   def trainLocally(base: Model, dataset: LocalDataset, round: Int): (Model, LocalMetrics) =
     val roundFactor = 1.0 / round.toDouble
     val sampleBoost = dataset.samples.toDouble / 1000.0
-    val updatedWeights = base.weights.zip(dataset.gradient).map:
-      case (weight, gradient) =>
-        weight - (gradient * 0.18 * roundFactor) + sampleBoost
+    val updatedWeights = base.weights
+      .zip(dataset.gradient)
+      .map:
+        case (weight, gradient) =>
+          weight - (gradient * 0.18 * roundFactor) + sampleBoost
 
     val model = Model(updatedWeights)
     val l1 = updatedWeights.map(math.abs).sum / updatedWeights.size.toDouble

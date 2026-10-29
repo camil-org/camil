@@ -1,41 +1,27 @@
 package io.github.party.nebula
 
-import scala.concurrent.Await
+import scala.caps.{ SharedCapability, Stateful }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{ Duration, DurationInt }
 
-import io.github.party.Choreography
+import io.github.party.{ Choreography, Collective, Field, Multitier, VM }
 import io.github.party.Choreography.*
-import io.github.party.Collective
 import io.github.party.Collective.*
-import io.github.party.CollectiveBuildingBlocks.DistanceSensor
+import io.github.party.CollectiveBuildingBlocks.{ DistanceSensor, G }
 import io.github.party.CollectiveBuildingBlocks.DistanceSensor.nbrRange
-import io.github.party.CollectiveBuildingBlocks.G
-import io.github.party.Field
-import io.github.party.Multitier
 import io.github.party.Multitier.*
-import io.github.party.VM
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.ChoreographyHandler
-import io.github.party.handlers.CollectiveHandler
-import io.github.party.handlers.MultitierHandler
-import io.github.party.handlers.PlacementTypeHandler
+import io.github.party.handlers.{ ChoreographyHandler, CollectiveHandler, MultitierHandler, PlacementTypeHandler }
 import io.github.party.nebula.NebulaDomain.*
-import io.github.party.network.Network
+import io.github.party.network.{ Network, NetworkError }
 import io.github.party.network.Network.peerAddress
-import io.github.party.network.NetworkError
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
-import io.github.party.placement.PlacementType.on
-import io.github.party.placement.PlacementType.place
+import io.github.party.placement.PlacementType.{ on, place }
 import io.github.party.raise.Raise
-import scala.caps.Stateful
-import scala.caps.SharedCapability
 
 object Nebula:
   type Coordinator <: { type Tie <: Multiple[Participant] & Single[Dashboard] }

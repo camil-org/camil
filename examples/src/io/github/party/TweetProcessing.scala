@@ -1,23 +1,20 @@
 package io.github.party
 
-import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.network.Network
-import io.github.party.network.Network.*
-import io.github.party.placement.Placement
-import io.github.party.signal.Signal.signalBuilder
-import io.github.party.placement.PlacementType.*
-import io.github.party.Multitier.*
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
-import io.github.party.signal.Signal
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
-import io.github.party.raise.Raise
-import io.github.party.network.NetworkError
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.handlers.MultitierHandler
+
+import io.github.party.Multitier.*
 import io.github.party.distributed.InMemoryNetwork
-import scala.concurrent.Future
-import scala.concurrent.Await
+import io.github.party.handlers.{ MultitierHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.network.Network.*
+import io.github.party.peers.Peers.{ Peer, PeerTag }
+import io.github.party.peers.Peers.Cardinality.*
+import io.github.party.placement.Placement
+import io.github.party.placement.PlacementType.*
+import io.github.party.raise.Raise
+import io.github.party.signal.Signal
+import io.github.party.signal.Signal.signalBuilder
 
 object TweetProcessing:
   type Input <: { type Tie <: Single[Filter] }

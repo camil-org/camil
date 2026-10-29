@@ -5,19 +5,14 @@ import java.util.concurrent.{ ConcurrentLinkedQueue, LinkedBlockingQueue }
 import scala.annotation.tailrec
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Promise
+import scala.concurrent.{ Await, ExecutionContext, Promise }
 import scala.concurrent.duration.*
 
-import io.github.party.network.NetworkEvent
-import io.github.party.network.{ Identifier, Network, NetworkError }
+import io.github.party.network.{ Identifier, Network, NetworkError, NetworkEvent }
 import io.github.party.peers.Peers.{ Peer, PeerTag, TiedWith }
 import io.github.party.raise.Raise
-import io.github.party.raise.Raise.ensure
-import io.github.party.raise.Raise.raise
-import io.github.party.signal.Emitter
-import io.github.party.signal.Signal
+import io.github.party.raise.Raise.{ ensure, raise }
+import io.github.party.signal.{ Emitter, Signal }
 import io.github.party.signal.Signal.SignallingImpl
 
 /**

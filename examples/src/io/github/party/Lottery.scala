@@ -6,13 +6,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.party.Choreography
 import io.github.party.Choreography.*
 import io.github.party.distributed.InMemoryNetwork
-import io.github.party.handlers.ChoreographyHandler
-import io.github.party.handlers.PlacementTypeHandler
-import io.github.party.network.Network
-import io.github.party.network.NetworkError
+import io.github.party.handlers.{ ChoreographyHandler, PlacementTypeHandler }
+import io.github.party.network.{ Network, NetworkError }
+import io.github.party.peers.Peers.{ Peer, PeerTag }
 import io.github.party.peers.Peers.Cardinality.*
-import io.github.party.peers.Peers.Peer
-import io.github.party.peers.Peers.PeerTag
 import io.github.party.placement.PeerScope.take
 import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.*
@@ -161,13 +158,13 @@ object Lottery:
       val expected = take(alpha2AtS1)
       val recomputed = commit(take(rho2AtS1), take(psi2AtS1))
       require(expected == recomputed, "[Server1] Commitment check FAILED for Server2!")
-      println(s"[Server1] Commitment check passed for Server2 ✓")
+      println("[Server1] Commitment check passed for Server2 ✓")
 
     on[Server2]:
       val expected = take(alpha1AtS2)
       val recomputed = commit(take(rho1AtS2), take(psi1AtS2))
       require(expected == recomputed, "[Server2] Commitment check FAILED for Server1!")
-      println(s"[Server2] Commitment check passed for Server1 ✓")
+      println("[Server2] Commitment check passed for Server1 ✓")
 
     // ── Step 4e: Both servers deterministically derive ω = (ρ₁ + ρ₂) % 2 ───
     //   numClients = 2.  Both servers compute the same value from the opened ρ's.
