@@ -7,7 +7,6 @@ import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on
 import io.github.party.Choreography.*
 import io.github.party.placement.PeerScope.take
-import io.github.party.placement.PlacementType.place
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.raise.Raise
@@ -31,6 +30,7 @@ import io.github.party.CollectiveBuildingBlocks.DistanceSensor.nbrRange
 import io.github.party.Choreography
 import scala.caps.Stateful
 import scala.caps.SharedCapability
+import io.github.party.placement.PeerScope
 
 object CityEvt:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Smartphone] }
@@ -43,52 +43,69 @@ object CityEvt:
 
   final case class Recommendation(content: String)
 
-  class CloudState extends Stateful, SharedCapability:
-    var registeredUsers: Map[String, Token] on Cloud = place(Map.empty)
+  final case class User(username: String, email: String)
+
+  class CityEvtState extends Stateful, SharedCapability:
+    private var _registeredUsers: Map[String, Token] = Map.empty
+
+    def registeredUsers(using PeerScope[Cloud]): Map[String, Token] = _registeredUsers
+
+    update def register(username: String)(using PeerScope[Cloud]) =
+      val token = UUID.randomUUID()
+      _registeredUsers = _registeredUsers + (username -> token)
+      token
+
+    def isRegistered(token: Token)(using PeerScope[Cloud]) = _registeredUsers.exists(_._2 == token)
 
   private val devicePositions = Map(
     "smartphone-1" -> (0.0, 0.0),
     "smartphone-2" -> (1.5, 0.0),
   )
 
-  def userRegistration(cloudState: CloudState, userData: (String, String) on Smartphone)(using Network, Placement, Multitier) = Multitier:
-    val registration = on[Smartphone]:
-      signalBuilder[RegistrationForm]: em =>
-        Thread.sleep(1000) // Simulate user filling the registration form
-        em.emit(RegistrationForm(take(userData)._1, take(userData)._2))
-    val registered = on[Cloud]:
-      Signal
-        .merge(asLocalAll(registration).values.toSeq)
-        .map: form =>
-          val token = UUID.randomUUID()
-          cloudState.registeredUsers = place(take(cloudState.registeredUsers) + (form.username -> token))
-          form.email -> token
-    on[Smartphone]:
-      val res = asLocal[Smartphone, Cloud](registered).filter(_._1 == take(userData)._2).first._2
-      println(s"User ${peerAddress} with email ${take(userData)._2} has been registered with token: ${res}")
-      res
-
-  def recommendation(cloudState: CloudState, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier): Unit =
+  def userRegistration(cityEvt: CityEvtState)(using Network, Placement, Multitier) = 
     Multitier:
-      val authRequests = on[Edge] { asLocalAll(smartphoneToken).toMap.map { case (k, v) => k.asInstanceOf[String] -> v } }
+      val user = on[Smartphone]:
+        val username = peerAddress.asInstanceOf[String] // Using peer address as username for simplicity
+        val email = s"$username@example.com"
+        User(username, email)
+      val registration = on[Smartphone]:
+        signalBuilder[RegistrationForm]: em =>
+          Thread.sleep(1000) // Simulate user filling the registration form
+          em.emit(RegistrationForm(take(user).username, take(user).email))
+      val registered = on[Cloud]:
+        signalBuilder[(String, Token)]: em =>
+          Signal.merge(asLocalAll(registration).values)
+            .map: form =>
+              val token = UUID.randomUUID()
+              cityEvt.register(form.username)
+              em.emit(form.email -> token)
+      on[Smartphone]:
+        val token = asLocal[Smartphone, Cloud](registered).filter(_._1 == take(user).email).first._2
+        println(s"User ${peerAddress} with email ${take(user).email} has been registered with token: ${token}")
+        token
+
+  def recommendation(cityEvt: CityEvtState, smartphoneToken: Token on Smartphone)(using Network, Placement, Choreography, Multitier): Unit =
+    Multitier:
+      val authRequests = on[Edge]:
+        asLocalAll(smartphoneToken).toMap.map((k, v) => k.asInstanceOf[String] -> v)
       val grantedResults = Choreography:
         val requests = comm[Edge, Cloud](authRequests)
         val authGranted = on[Cloud]:
-          take(requests).map:
-            case (peerId, token) => peerId -> take(cloudState.registeredUsers).exists(_._2 == token)
+          take(requests)
+            .map((peerId, token) => peerId -> cityEvt.isRegistered(token))
         comm[Cloud, Edge](authGranted)
       val recommendations = on[Edge]:
         val authPeers = take(grantedResults).filter(_._2).keySet
         signalBuilder[(String, Recommendation)]: em =>
           while true do
             Thread.sleep(1000) // Simulate waiting for new recommendations
-            authPeers.foreach { peerId =>
+            authPeers.foreach: peerId =>
               em.emit(peerId -> Recommendation(s"Hello $peerId, here is your recommendation!"))
-            }
       on[Smartphone]:
-        asLocal[Smartphone, Edge](recommendations).filter(_._1 == peerAddress.asInstanceOf[String]).map(_._2).subscribe { recommendation =>
-          println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
-        }
+        asLocal[Smartphone, Edge](recommendations)
+          .filter(_._1 == peerAddress.asInstanceOf[String])
+          .map(_._2).subscribe: recommendation =>
+            println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
 
   def crowdMonitoring(using Network, Placement, Collective, Multitier) =
     given DistanceSensor = NbrSensor.sensor(devicePositions)
@@ -98,22 +115,15 @@ object CityEvt:
         nbrRange.sum / nbrRange.withoutSelf.size
     Multitier:
       on[Cloud]:
-        asLocalAll(crowingLevel).values.foreach { signal =>
-          signal.subscribe { crowd =>
+        asLocalAll(crowingLevel).values.foreach: signal =>
+          signal.subscribe: crowd =>
             if crowd < 1.0 then println(s"Crowd level is low: $crowd")
             else if crowd < 2.0 then println(s"Crowd level is medium: $crowd")
             else println(s"Crowd level is high: $crowd")
-          }
-        }
-  end crowdMonitoring
 
   def cityEvtApp(using Network, Placement, Multitier, Choreography, Collective) =
-    val usrEmail = on[Smartphone]:
-      val username = peerAddress.asInstanceOf[String] // Using peer address as username for simplicity
-      val email = s"$username@example.com"
-      (username, email)
-    val cloudState = new CloudState
-    val smartphoneToken = userRegistration(cloudState, usrEmail)
+    val cloudState = CityEvtState()
+    val smartphoneToken = userRegistration(cloudState)
     recommendation(cloudState, smartphoneToken)
     crowdMonitoring
     Thread.sleep(6000) // Keep the program running for a while to observe the output
