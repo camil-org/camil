@@ -7,7 +7,6 @@ import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on
 import io.github.party.Choreography.*
 import io.github.party.placement.PeerScope.take
-import io.github.party.placement.PlacementType.place
 import io.github.party.peers.Peers.Peer
 import io.github.party.peers.Peers.PeerTag
 import io.github.party.raise.Raise
@@ -32,7 +31,6 @@ import io.github.party.Choreography
 import scala.caps.Stateful
 import scala.caps.SharedCapability
 import io.github.party.placement.PeerScope
-import io.github.party.signal.Signal.merge
 
 object CityEvt:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Smartphone] }
