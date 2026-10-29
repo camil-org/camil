@@ -36,7 +36,7 @@ object Signal:
       emitter.close()
     signal
 
-  def merge[V](signals: Seq[Signal[V]])(using ec: ExecutionContext): Signal[V] =
+  def merge[V](signals: Iterable[Signal[V]])(using ec: ExecutionContext): Signal[V] =
     val mergedSignal = new SignallingImpl[V]
     val subscriptions = signals.map(_.subscribe(mergedSignal.emit))
     mergedSignal.onClose(() => subscriptions.foreach(_.cancel()))
