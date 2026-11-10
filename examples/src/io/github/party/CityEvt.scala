@@ -70,15 +70,16 @@ object CityEvt:
         User(username, email)
       val registration = on[Smartphone]:
         signalBuilder[RegistrationForm]: em =>
-          Thread.sleep(1000) // Simulate user filling the registration form
+          Thread.sleep(1_000) // Simulate user filling the registration form
           em.emit(RegistrationForm(take(user).username, take(user).email))
       val registered = on[Cloud]:
-        signalBuilder[(String, Token)]: em =>
-          Signal.merge(asLocalAll(registration).values)
-            .map: form =>
-              val token = UUID.randomUUID()
-              cityEvt.register(form.username)
-              em.emit(form.email -> token)
+        val (registrationsSignal, registrationsEmitter) = Signal.make[(String, Token)]
+        Signal.merge(asLocalAll(registration).values)
+          .subscribe: form =>
+            val token = UUID.randomUUID()
+            cityEvt.register(form.username)
+            registrationsEmitter.emit(form.email -> token)
+        registrationsSignal
       on[Smartphone]:
         val token = asLocal[Smartphone, Cloud](registered).filter(_._1 == take(user).email).first._2
         println(s"User ${peerAddress} with email ${take(user).email} has been registered with token: ${token}")
