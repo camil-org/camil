@@ -1,6 +1,6 @@
 package io.github.party.distributed
 
-import java.util.concurrent.{ ConcurrentLinkedQueue, LinkedBlockingQueue }
+import java.util.concurrent.{ ConcurrentLinkedQueue, Executors, LinkedBlockingQueue }
 
 import scala.annotation.tailrec
 import scala.collection.concurrent.TrieMap
@@ -191,7 +191,7 @@ private final class InMemoryNetworkImpl[LocalPeer <: Peer: PeerTag](
     Thread.sleep(10)
     eventLoopProcessor()
 
-  summon[ExecutionContext].execute(() => eventLoopProcessor())
+  Executors.newVirtualThreadPerTaskExecutor().execute(() => eventLoopProcessor())
 end InMemoryNetworkImpl
 
 /**
