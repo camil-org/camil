@@ -109,7 +109,7 @@ object CityEvt:
             println(s"User ${peerAddress} received recommendation: ${recommendation.content}")
 
   def crowdMonitoring(using Network, Placement, Collective, Multitier) =
-    given DistanceSensor = NbrSensor.sensor(devicePositions)
+    given DistanceSensor = NbrSensor.fromDevicePositions(devicePositions)
 
     val crowingLevel = Collective[Smartphone](1.seconds):
       rep(0.0): prev =>

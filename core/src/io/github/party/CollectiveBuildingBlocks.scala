@@ -5,12 +5,12 @@ import Collective.*
 
 object CollectiveBuildingBlocks:
   trait DistanceSensor:
-    def nbrRange(using c: Collective, vm: VM): Field[Double]
+    def nbrRange(using c: Collective, vm: VM): Field[vm.DeviceId, Double]
 
   object DistanceSensor:
-    def nbrRange(using c: Collective, vm: VM, sensor: DistanceSensor): Field[Double] = sensor.nbrRange
+    def nbrRange(using c: Collective, vm: VM, sensor: DistanceSensor): Field[vm.DeviceId, Double] = sensor.nbrRange
   
-  def G[V](using vm: VM, c: Collective)(source: Boolean, initial: V, acc: V ->{c, vm} V, metric: () => Field[Double]) =
+  def G[V](using vm: VM, c: Collective)(source: Boolean, initial: V, acc: V ->{c, vm} V, metric: () => Field[vm.DeviceId, Double]) =
     val m = metric()
     rep((Double.MaxValue, initial)): dv =>
       mux(source)((0.0, initial)):
@@ -38,7 +38,7 @@ object CollectiveBuildingBlocks:
     broadcast(source, distanceTo(target))
 
   def C[D: Ordering, V](using vm: VM, c: Collective)(
-    potential: Field[D],
+    potential: Field[vm.DeviceId, D],
     local: V, 
     combine: (V, V) ->{c, vm} V,
     zero: V
@@ -47,19 +47,13 @@ object CollectiveBuildingBlocks:
     rep(local): v =>
       val nValues = nbr(v)
       val childValues = neighborsParents.withoutSelf.collect:
-        case (childId, parentId) if parentId == vm.deviceId =>
-          nValues.withoutSelf
-            .find(_._1 == childId)
-            .map(_._2)
-            .getOrElse(zero)
+        case (childId, parentId) if parentId == vm.deviceId => nValues(childId).getOrElse(zero)
       .foldLeft(zero)(combine)
       combine(local, childValues)
 
-  private def findParent[D: Ordering](potential: Field[D]): Option[potential.Id] =
+  private def findParent[DeviceId, D: Ordering](potential: Field[DeviceId, D]): Option[DeviceId] =
     val myPotential = potential.localValue
     potential.withoutSelf
       .minByOption(_._2)
       .filter((_, d) => summon[Ordering[D]].lt(d, myPotential))
       .map(_._1)
-
-  def S[D: Numeric](grain: D, metric: () => Field[D]): Boolean = ???
