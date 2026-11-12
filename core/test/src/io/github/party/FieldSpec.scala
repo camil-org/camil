@@ -56,8 +56,8 @@ class FieldSpec extends AnyFlatSpec with Matchers:
     field.minWithoutSelf(Int.MaxValue) shouldBe Int.MaxValue
 
   it should "add two fields correctly using + operator" in:
-    val field1: Field[Int] = FieldImpl("self1", 5, Map("n1" -> 10, "n2" -> 20))
-    val field2: Field[Int] = FieldImpl("self2", 3, Map("n1" -> 7, "n2" -> 8))
+    val field1 = FieldImpl("self1", 5, Map("n1" -> 10, "n2" -> 20))
+    val field2 = FieldImpl("self2", 3, Map("n1" -> 7, "n2" -> 8))
     val result = (field1 + field2).asInstanceOf[FieldImpl[Int, String]]
     result.localValue shouldBe 8
     result.withoutSelf("n1") shouldBe 17

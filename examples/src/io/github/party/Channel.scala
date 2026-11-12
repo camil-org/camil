@@ -37,12 +37,13 @@ object Channel:
       "node-4" -> (1.0, 1.0),
   )
 
-  def channel(source: Boolean, target: Boolean, width: Int)(using Network, Collective, PlacementType^, DistanceSensor) = Collective[Node](0.5.second):
-    distanceTo(source) + distanceTo(target) <= distanceBetween(source, target)
+  def channel(source: Boolean, target: Boolean, width: Int)(using Network, Collective, PlacementType^, DistanceSensor) = 
+    Collective[Node](0.5.second):
+      distanceTo(source) + distanceTo(target) <= distanceBetween(source, target)
 
   def channelApp(using Network, Placement, Collective) =
-    given DistanceSensor = NbrSensor.sensor(devicePositions)
-    val channelSignal = channel(peerAddress == "node-1", peerAddress == "node-4", 1)
+    given DistanceSensor = NbrSensor.fromDevicePositions(devicePositions)
+    val channelSignal = channel(peerAddress == "node-1", peerAddress == "node-5", 1)
     val unitOf = on[Node]:
       val channels = take(channelSignal)
       channels.subscribe { isInChannel =>

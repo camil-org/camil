@@ -7,17 +7,17 @@ import io.github.party.VM
 import io.github.party.Field
 import io.github.party.network.Network
 
-private[party] case class FieldImpl[+V, DeviceId](localId: DeviceId, override val localValue: V, values: Map[DeviceId, V]) extends Field[V]:
-  type Id = DeviceId
-  def map[U](f: V -> U): Field[U] = FieldImpl(localId, f(localValue), values.view.mapValues(f).toMap)
+private[party] case class FieldImpl[+V, DeviceId](localId: DeviceId, override val localValue: V, values: Map[DeviceId, V]) extends Field[DeviceId, V]:
+  def map[U](f: V -> U): Field[DeviceId, U] = FieldImpl(localId, f(localValue), values.view.mapValues(f).toMap)
 
-  def withoutSelf: Map[Id, V] = values.filterNot(_._1 == localId)
+  def apply(id: DeviceId): Option[V] = values.get(id)
 
-  def combine[A, B](that: Field[A])(f: (V, A) -> B): Field[B] =
+  def withoutSelf: Map[DeviceId, V] = values.filterNot(_._1 == localId)
+
+  def combine[A, B](that: Field[DeviceId, A])(f: (V, A) -> B): Field[DeviceId, B] =
     val local = f(this.localValue, that.localValue)
     val combinedValues = this.values.flatMap: 
-      case (id: that.Id @unchecked, v) => that.withoutSelf.get(id).map(a => id -> f(v, a))
-      case _ => None
+      case (deviceId, v) => that.withoutSelf.get(deviceId).map(a => deviceId -> f(v, a))
     FieldImpl(localId, local, combinedValues.toMap)
 
 private final class CollectiveHandlerImpl[P <: Peer: PeerTag, Id] extends Collective:
@@ -28,7 +28,7 @@ private final class CollectiveHandlerImpl[P <: Peer: PeerTag, Id] extends Collec
     vm.dealign()
     result
 
-  def nbr[V](using vm: VM)(value: V): Field[V] =
+  def nbr[V](using vm: VM)(value: V): Field[vm.DeviceId, V] =
     vm.align("nbr")
     vm.setValueAt(vm.currentPath, value)
     val neighbors = vm.neighborValuesAt[V](vm.currentPath)
