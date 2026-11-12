@@ -52,8 +52,8 @@ object CollectiveBuildingBlocks:
       combine(local, childValues)
 
   private def findParent[DeviceId, D: Ordering](potential: Field[DeviceId, D]): Option[DeviceId] =
-    val myPotential = potential.localValue
+    val localPotential = potential.localValue
     potential.withoutSelf
       .minByOption(_._2)
-      .filter((_, d) => summon[Ordering[D]].lt(d, myPotential))
+      .filter((_, d) => summon[Ordering[D]].lt(d, localPotential))
       .map(_._1)
