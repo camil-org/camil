@@ -32,7 +32,7 @@ object CollectiveBuildingBlocks:
     )
 
   def broadcast[V](source: Boolean, value: V)(using vm: VM, c: Collective, sensor: DistanceSensor) =
-    G(source, initial = value, acc = identity, metric = unsafeAssumePure((() => unsafeAssumePure(sensor.nbrRange))))
+    G(source, initial = value, acc = identity, metric = () => sensor.nbrRange)
 
   def distanceBetween(source: Boolean, target: Boolean)(using VM, Collective, DistanceSensor) =
     broadcast(source, distanceTo(target))
