@@ -48,7 +48,7 @@ object CollectiveExampleSupport:
     peerId.stripPrefix("node-").toInt
 
   def distanceSensor(topology: StaticTopology = Line4)(using Collective): DistanceSensor =
-    NbrSensor.sensor(topology.positions)
+    NbrSensor.fromDevicePositions(topology.positions)
 
   def awaitLatest[V](signal: Signal[V], observationWindow: FiniteDuration): V =
     @volatile var latest: Option[V] = None
@@ -122,7 +122,7 @@ object CollectiveExampleSupport:
 
   private def inRangeDistances(
       topology: StaticTopology,
-  )(using Collective, VM, DistanceSensor): Field[Double] =
+  )(using c: Collective, vm: VM, d: DistanceSensor): Field[vm.DeviceId, Double] =
     DistanceSensor.nbrRange.map: distance =>
       if distance <= topology.communicationRadius then distance else Double.PositiveInfinity
 

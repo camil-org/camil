@@ -1,5 +1,7 @@
 package io.github.party
 
+import scala.caps.SharedCapability
+import scala.caps.Stateful
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -30,8 +32,6 @@ import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
-import scala.caps.Stateful
-import scala.caps.SharedCapability
 
 object SmartMobility:
   type Cloud <: { type Tie <: Single[Edge] & Multiple[Vehicle] }
@@ -305,13 +305,7 @@ object SmartMobility:
       println(s"[$vehicleId] received credential ${token.value}")
 
   private def trafficSensingPhase(state: SmartMobilityState)(using Network, Placement, Collective): Unit =
-    given DistanceSensor = new DistanceSensor:
-      def nbrRange(using Collective, VM): Field[Double] =
-        val localPosition = telemetryFor(currentVehicleId).position
-        nbr(localPosition).map: remotePosition =>
-          val dx = localPosition._1 - remotePosition._1
-          val dy = localPosition._2 - remotePosition._2
-          math.sqrt((dx * dx) + (dy * dy))
+    given DistanceSensor = NbrSensor.fromLocalPosition(telemetryFor(currentVehicleId).position)
 
     val trafficSignal = Collective[Vehicle](ProbeRound):
       val localTelemetry = telemetryFor(currentVehicleId)

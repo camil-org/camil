@@ -1,5 +1,7 @@
 package io.github.party.nebula
 
+import scala.caps.SharedCapability
+import scala.caps.Stateful
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -16,7 +18,7 @@ import io.github.party.CollectiveBuildingBlocks.G
 import io.github.party.Field
 import io.github.party.Multitier
 import io.github.party.Multitier.*
-import io.github.party.VM
+import io.github.party.NbrSensor
 import io.github.party.distributed.InMemoryNetwork
 import io.github.party.handlers.ChoreographyHandler
 import io.github.party.handlers.CollectiveHandler
@@ -34,8 +36,6 @@ import io.github.party.placement.Placement
 import io.github.party.placement.PlacementType.on
 import io.github.party.placement.PlacementType.place
 import io.github.party.raise.Raise
-import scala.caps.Stateful
-import scala.caps.SharedCapability
 
 object Nebula:
   type Coordinator <: { type Tie <: Multiple[Participant] & Single[Dashboard] }
@@ -80,14 +80,7 @@ object Nebula:
 
   private def topologyAwareness(state: NebulaState)(using Network, Placement, Collective): Unit =
     val localPeer = peerAddress.asInstanceOf[String]
-    given DistanceSensor = new DistanceSensor:
-      val localPosition = datasets(localPeer).position
-      def nbrRange(using Collective, VM): Field[Double] =
-        nbr(localPosition)
-          .map: remotePosition =>
-            val dx = localPosition._1 - remotePosition._1
-            val dy = localPosition._2 - remotePosition._2
-            math.sqrt((dx * dx) + (dy * dy))
+    given DistanceSensor = NbrSensor.fromLocalPosition(datasets(localPeer).position)
 
     val topologySignal = Collective[Participant](RoundInterval):
       val rawRanges = nbrRange

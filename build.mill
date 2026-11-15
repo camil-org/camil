@@ -70,4 +70,4 @@ object examples extends CommonScala:
   def moduleDeps = Seq(core, distributed)
 
 object nebula extends CommonScala:
-  def moduleDeps = Seq(core, distributed)
+  def moduleDeps = Seq(core, distributed, examples)

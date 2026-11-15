@@ -71,35 +71,34 @@ sealed trait VM extends Stateful, SharedCapability:
     stack.clear()
     trace.clear()
 
-trait Field[+V]:
-  type Id
-
-  def withoutSelf: Map[Id, V]
-  def map[U](f: V -> U): Field[U]
+trait Field[DeviceId, +V]:
+  def apply(id: DeviceId): Option[V]
+  def withoutSelf: Map[DeviceId, V]
+  def map[U](f: V -> U): Field[DeviceId, U]
   def localValue: V
-  def combine[A, B](that: Field[A])(f: (V, A) -> B): Field[B]
+  def combine[A, B](that: Field[DeviceId, A])(f: (V, A) -> B): Field[DeviceId, B]
 
 object Field:
-  extension [N: Numeric](field: Field[N])
+  extension [DeviceId, N: Numeric](field: Field[DeviceId, N])
     def sum: N = field.withoutSelf.values.fold(field.localValue)(Numeric[N].plus)
     def sumWithoutSelf(default: N): N = field.withoutSelf.values.fold(default)(Numeric[N].plus)
     def max: N = field.maxWithoutSelf(field.localValue)
     def maxWithoutSelf(default: N): N = field.withoutSelf.values.fold(default)(Numeric[N].max)
     def min: N = field.minWithoutSelf(field.localValue)
     def minWithoutSelf(default: N): N = field.withoutSelf.values.fold(default)(Numeric[N].min)
-    def +[U >: N: Numeric](that: Field[U]): Field[U] = field.combine(that)(Numeric[U].plus)
-    def -[U >: N: Numeric](that: Field[U]): Field[U] = field.combine(that)(Numeric[U].minus)
-    def *[U >: N: Numeric](that: Field[U]): Field[U] = field.combine(that)(Numeric[U].times)
+    def +[U >: N: Numeric](that: Field[DeviceId, U]): Field[DeviceId, U] = field.combine(that)(Numeric[U].plus)
+    def -[U >: N: Numeric](that: Field[DeviceId, U]): Field[DeviceId, U] = field.combine(that)(Numeric[U].minus)
+    def *[U >: N: Numeric](that: Field[DeviceId, U]): Field[DeviceId, U] = field.combine(that)(Numeric[U].times)
 
 trait Collective extends Multiparty:
   def rep[V](using vm: VM)(initial: V)(evolution: V ->{this, vm} V): V
-  def nbr[V](using VM)(value: V): Field[V]
+  def nbr[V](using vm: VM)(value: V): Field[vm.DeviceId, V]
   def branch[V](using vm: VM)(condition: Boolean)(trueBranch: ->{this, vm} V)(falseBranch: ->{this, vm} V): V
   def mux[V](using VM)(condition: Boolean)(trueValue: V)(falseValue: V): V
 
 object Collective:
   def rep[V](using c: Collective, vm: VM)(initial: V)(evolution: V ->{c, vm} V): V = c.rep(initial)(evolution)
-  def nbr[V](using c: Collective, vm: VM)(value: V): Field[V] = c.nbr(value)
+  def nbr[V](using c: Collective, vm: VM)(value: V): Field[vm.DeviceId, V] = c.nbr(value)
   def branch[V](using c: Collective, vm: VM)(condition: Boolean)(trueBranch: ->{c, vm} V)(falseBranch: ->{c, vm} V): V = 
     c.branch(condition)(trueBranch)(falseBranch)
   def mux[V](using c: Collective, vm: VM)(condition: Boolean)(trueValue: V)(falseValue: V): V = c.mux(condition)(trueValue)(falseValue)
