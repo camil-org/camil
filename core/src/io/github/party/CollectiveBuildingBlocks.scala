@@ -28,7 +28,7 @@ object CollectiveBuildingBlocks:
       source, 
       initial = 0.0, 
       acc = _ + sensor.nbrRange.minWithoutSelf(Double.MaxValue), 
-      metric = unsafeAssumePure(() => unsafeAssumePure(sensor.nbrRange))
+      metric = () => sensor.nbrRange
     )
 
   def broadcast[V](source: Boolean, value: V)(using vm: VM, c: Collective, sensor: DistanceSensor) =
