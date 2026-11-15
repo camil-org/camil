@@ -1,6 +1,5 @@
 package io.github.party
 
-import scala.caps.unsafe.unsafeAssumePure
 import Collective.*
 
 object CollectiveBuildingBlocks:
