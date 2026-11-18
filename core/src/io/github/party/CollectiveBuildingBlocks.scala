@@ -37,12 +37,13 @@ object CollectiveBuildingBlocks:
     broadcast(source, distanceTo(target))
 
   def C[D: Ordering, V](using vm: VM, c: Collective)(
-    potential: Field[vm.DeviceId, D],
+    potential: D,
     local: V, 
     combine: (V, V) ->{c, vm} V,
     zero: V
   ): V =
-    val neighborsParents = nbr(findParent(potential).getOrElse(vm.deviceId))
+    val neighborsPotential = nbr(potential)
+    val neighborsParents = nbr(findParent(neighborsPotential).getOrElse(vm.deviceId))
     rep(local): v =>
       val nValues = nbr(v)
       val childValues = neighborsParents.withoutSelf.collect:

@@ -5,7 +5,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration.DurationDouble
 
 import io.github.party.Collective
-import io.github.party.Collective.nbr
 import io.github.party.distributed.InMemoryNetwork
 import io.github.party.handlers.CollectiveHandler
 import io.github.party.handlers.PlacementTypeHandler
@@ -42,8 +41,7 @@ object CollectCast:
   /** Each device flags `sense`; values flow down the gradient towards `sink`, which ends up with the total count. */
   def collectCast(sink: Boolean, sense: Boolean)(using Network, Collective, PlacementType^, DistanceSensor) =
     Collective[Node](0.5.second):
-      val potential = nbr(distanceTo(sink))
-      C(potential, local = if sense then 1 else 0, combine = _ + _, zero = 0)
+      C(potential = distanceTo(sink), local = if sense then 1 else 0, combine = _ + _, zero = 0)
 
   def app(using Network, Placement, Collective, DistanceSensor) =
     val countSignal = collectCast(sink = peerAddress == "node-1", sense = peerAddress == "node-4")
